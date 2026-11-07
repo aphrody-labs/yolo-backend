@@ -183,27 +183,35 @@ describe("Unified Monorepo App HTTP Endpoints", () => {
     expect(jwksRes.status).toBe(200);
   });
 
-  test("Serves Auth UI, Public Profile, and Admin Dashboard", async () => {
-    const app = createUnifiedBackendApp();
+  test("Auth UI, DB-backed profile, and admin RBAC", async () => {
+    const { IdentityDatabase } = await import("../packages/better-auth-full/src/db/adapter.js");
+    const db = new IdentityDatabase({ engine: "sqlite", sqlitePath: ":memory:" });
+    await db.migrate();
+    const app = createUnifiedBackendApp({ db });
 
-    const signinRes = await app.request(
-      "/auth/signin?theme=aphrody&product=aphrody",
-    );
-    expect(signinRes.status).toBe(200);
-    const signinHtml = await signinRes.text();
-    expect(signinHtml).toContain("Continue with Google");
-    expect(signinHtml).toContain("Steam");
-    expect(signinHtml).toContain("Discord");
+    const signin = await app.request("/auth/signin?theme=aphrody&product=aphrody");
+    expect(signin.status).toBe(200);
+    const html = await signin.text();
+    expect(html).toContain("Continue with Google");
+    expect(html).not.toContain("startPasskeyAuth");
 
-    const profileRes = await app.request("/profile/alex");
-    expect(profileRes.status).toBe(200);
-    const profileHtml = await profileRes.text();
-    expect(profileHtml).toContain("@alex");
+    expect((await app.request("/profile/nobody")).status).toBe(404);
+    expect((await app.request("/admin", { redirect: "manual" })).status).toBe(302);
 
-    const adminRes = await app.request("/admin");
-    expect(adminRes.status).toBe(200);
-    const adminHtml = await adminRes.text();
-    expect(adminHtml).toContain("Identity Suite Management Console");
+    const mk = async (id: string, role: "user" | "admin") => {
+      const u = await db.createUser({ id, email: id + "@aphrody.com", name: id, username: id, emailVerified: true, role, banned: false });
+      const token = "a".repeat(32) + id.length.toString(16).padStart(2, "0");
+      await db.createSession({ id: "s_" + id, userId: u.id, token, expiresAt: new Date(Date.now() + 3600000).toISOString() });
+      return token;
+    };
+    const userTok = await mk("plain", "user");
+    const adminTok = await mk("boss", "admin");
+
+    expect((await app.request("/profile/plain")).status).toBe(200);
+    expect((await app.request("/admin", { headers: { cookie: "aphrody_session=" + userTok } })).status).toBe(403);
+    const ok = await app.request("/admin", { headers: { cookie: "aphrody_session=" + adminTok } });
+    expect(ok.status).toBe(200);
+    expect(await ok.text()).toContain("kpi-value\">2<");
   });
 
   test("Password Vault encrypts and decrypts via HTTP API", async () => {

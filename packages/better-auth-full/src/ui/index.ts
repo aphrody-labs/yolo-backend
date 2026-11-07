@@ -198,11 +198,6 @@ export class AuthUiRenderer {
       <button type="submit" class="primary-btn">Send Magic Sign-In Link</button>
     </form>
 
-    <button type="button" class="passkey-btn" onclick="startPasskeyAuth()">
-      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
-      Sign in with Passkey / FIDO2
-    </button>
-
     <div class="footer-links">
       ${
         mode === "signin"
@@ -212,27 +207,6 @@ export class AuthUiRenderer {
     </div>
   </div>
 
-  <script>
-    async function startPasskeyAuth() {
-      if (!window.PublicKeyCredential) {
-        alert("WebAuthn is not supported in this browser.");
-        return;
-      }
-      try {
-        const challengeRes = await fetch("/api/auth/passkey/challenge");
-        const options = await challengeRes.json();
-        const cred = await navigator.credentials.get({ publicKey: options });
-        const verifyRes = await fetch("/api/auth/passkey/verify", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(cred)
-        });
-        if (verifyRes.ok) window.location.href = "${options.redirectUrl || "/"}";
-      } catch (err) {
-        console.error("Passkey error:", err);
-      }
-    }
-  </script>
 </body>
 </html>`;
   }

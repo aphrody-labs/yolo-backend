@@ -26,7 +26,7 @@ import { ProviderRegistry } from "../packages/better-auth-full/src/providers/ind
 import { GoogleWorkspaceClient } from "../packages/google-workspace/src/index.js";
 import { MailDispatcher } from "../packages/mail-templates/src/dispatcher.js";
 
-export function createUnifiedBackendApp() {
+export function createUnifiedBackendApp(opts: { db?: IdentityDatabase } = {}) {
   const app = new Hono();
   const oauthServer = new AphrodyOAuthServer();
   const authClient = new AphrodyAuthClient();
@@ -35,7 +35,7 @@ export function createUnifiedBackendApp() {
   const dispatcher = new MailDispatcher();
   const hostinger = new HostingerMailClient();
   const google = new GoogleWorkspaceClient();
-  const db = new IdentityDatabase();
+  const db = opts.db ?? new IdentityDatabase();
 
   // Root Status & Capability Discovery
   app.get("/", (c) => {
@@ -134,6 +134,12 @@ export function createUnifiedBackendApp() {
 
   // Admin Dashboard
   app.get("/admin", async (c) => {
+    const cookie = (c.req.header("cookie") || "").match(/aphrody_session=([a-f0-9]+)/)?.[1];
+    await db.ensureReady();
+    const session = cookie ? await db.findSessionByToken(cookie) : null;
+    if (!session || new Date(session.expiresAt) < new Date()) return c.redirect("/auth/signin");
+    const me = await db.findUserById(session.userId);
+    if (!me || me.role !== "admin" || me.banned) return c.html("<h1>403 forbidden</h1>", 403);
     const theme = (c.req.query("theme") || "aphrody") as any;
     const html = AuthUiRenderer.renderAdminDashboard(
       await db.getStats(),
@@ -196,9 +202,8 @@ export function createUnifiedBackendApp() {
       const origin = process.env.BETTER_AUTH_URL || new URL(c.req.url).origin;
       const magicLinkUrl = `${origin}/api/auth/verify?token=${token}&email=${encodeURIComponent(email)}`;
 
-      // Dispatch real email via template engine
-      await dispatcher.send({
-        template: "magic-link",
+      const mailOptions = {
+        template: "magic-link" as const,
         from: { email: "auth@aphrody.app", name: "Aphrody Security" },
         to: email,
         templateData: {
@@ -206,7 +211,15 @@ export function createUnifiedBackendApp() {
           magicLinkUrl,
           expiresInMinutes: 15,
         },
-      });
+      };
+      if (process.env.MAIL_OUTBOX_DIR) {
+        // Explicit test transport: persist the rendered message instead of network delivery.
+        const { mkdirSync } = await import("node:fs");
+        mkdirSync(process.env.MAIL_OUTBOX_DIR, { recursive: true });
+        await Bun.write(`${process.env.MAIL_OUTBOX_DIR}/${Date.now()}-${email}.json`, JSON.stringify({ ...mailOptions, magicLinkUrl }));
+      } else {
+        await dispatcher.send(mailOptions);
+      }
 
       await db.logAudit({
         id: `aud_${Date.now()}`,
