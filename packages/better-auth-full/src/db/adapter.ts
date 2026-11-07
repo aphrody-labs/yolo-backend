@@ -79,20 +79,15 @@ export class IdentityDatabase {
       return;
     }
 
-    // For Neon, Supabase, or Postgres, execute POSTGRES_SCHEMA via Bun's native sql
     try {
       const { sql } = await import("bun");
       await sql.unsafe(POSTGRES_SCHEMA);
       this.isInitialized = true;
     } catch {
-      // Fallback to SQLite in-memory if external PostgreSQL is unavailable in test environments
-      if (!this.sqliteDb) {
-        this.sqliteDb = new SqliteDatabase(":memory:");
-        this.sqliteDb.run("PRAGMA journal_mode = WAL;");
-        this.sqliteDb.run("PRAGMA foreign_keys = ON;");
-      }
-      this.sqliteDb.run(SQLITE_SCHEMA);
       this.engine = "sqlite";
+      this.sqliteDb = new SqliteDatabase(":memory:");
+      this.sqliteDb.run("PRAGMA foreign_keys = ON;");
+      this.sqliteDb.run(SQLITE_SCHEMA);
       this.isInitialized = true;
     }
   }
