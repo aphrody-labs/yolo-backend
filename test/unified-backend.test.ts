@@ -101,7 +101,9 @@ describe("Zumba Webmail Engine", () => {
       text: "Dispatched from compose dialog",
     });
     expect(sentMsg.folder).toBe("sent");
-    expect(zumba.getFolderMessages("sent").some((m) => m.id === sentMsg.id)).toBe(true);
+    expect(
+      zumba.getFolderMessages("sent").some((m) => m.id === sentMsg.id),
+    ).toBe(true);
 
     const htmlUi = zumba.getHtmlUi();
     expect(htmlUi).toContain("Zumba Webmail");
@@ -194,34 +196,63 @@ describe("Unified Monorepo App HTTP Endpoints", () => {
   });
 
   test("Auth UI, DB-backed profile, and admin RBAC", async () => {
-    const { IdentityDatabase } = await import("../packages/better-auth-full/src/db/adapter.js");
-    const db = new IdentityDatabase({ engine: "sqlite", sqlitePath: ":memory:" });
+    const { IdentityDatabase } =
+      await import("../packages/better-auth-full/src/db/adapter.js");
+    const db = new IdentityDatabase({
+      engine: "sqlite",
+      sqlitePath: ":memory:",
+    });
     await db.migrate();
     const app = createUnifiedBackendApp({ db });
 
-    const signin = await app.request("/auth/signin?theme=aphrody&product=aphrody");
+    const signin = await app.request(
+      "/auth/signin?theme=aphrody&product=aphrody",
+    );
     expect(signin.status).toBe(200);
     const html = await signin.text();
     expect(html).toContain("Continue with Google");
     expect(html).not.toContain("startPasskeyAuth");
 
     expect((await app.request("/profile/nobody")).status).toBe(404);
-    expect((await app.request("/admin", { redirect: "manual" })).status).toBe(302);
+    expect((await app.request("/admin", { redirect: "manual" })).status).toBe(
+      302,
+    );
 
     const mk = async (id: string, role: "user" | "admin") => {
-      const u = await db.createUser({ id, email: id + "@aphrody.com", name: id, username: id, emailVerified: true, role, banned: false });
+      const u = await db.createUser({
+        id,
+        email: id + "@aphrody.com",
+        name: id,
+        username: id,
+        emailVerified: true,
+        role,
+        banned: false,
+      });
       const token = "a".repeat(32) + id.length.toString(16).padStart(2, "0");
-      await db.createSession({ id: "s_" + id, userId: u.id, token, expiresAt: new Date(Date.now() + 3600000).toISOString() });
+      await db.createSession({
+        id: "s_" + id,
+        userId: u.id,
+        token,
+        expiresAt: new Date(Date.now() + 3600000).toISOString(),
+      });
       return token;
     };
     const userTok = await mk("plain", "user");
     const adminTok = await mk("boss", "admin");
 
     expect((await app.request("/profile/plain")).status).toBe(200);
-    expect((await app.request("/admin", { headers: { cookie: "aphrody_session=" + userTok } })).status).toBe(403);
-    const ok = await app.request("/admin", { headers: { cookie: "aphrody_session=" + adminTok } });
+    expect(
+      (
+        await app.request("/admin", {
+          headers: { cookie: "aphrody_session=" + userTok },
+        })
+      ).status,
+    ).toBe(403);
+    const ok = await app.request("/admin", {
+      headers: { cookie: "aphrody_session=" + adminTok },
+    });
     expect(ok.status).toBe(200);
-    expect(await ok.text()).toContain("kpi-value\">2<");
+    expect(await ok.text()).toContain('kpi-value">2<');
   });
 
   test("Password Vault encrypts and decrypts via HTTP API", async () => {

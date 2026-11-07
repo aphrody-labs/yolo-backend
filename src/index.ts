@@ -154,12 +154,16 @@ export function createUnifiedBackendApp(opts: { db?: IdentityDatabase } = {}) {
 
   // Admin Dashboard
   app.get("/admin", async (c) => {
-    const cookie = (c.req.header("cookie") || "").match(/aphrody_session=([a-f0-9]+)/)?.[1];
+    const cookie = (c.req.header("cookie") || "").match(
+      /aphrody_session=([a-f0-9]+)/,
+    )?.[1];
     await db.ensureReady();
     const session = cookie ? await db.findSessionByToken(cookie) : null;
-    if (!session || new Date(session.expiresAt) < new Date()) return c.redirect("/auth/signin");
+    if (!session || new Date(session.expiresAt) < new Date())
+      return c.redirect("/auth/signin");
     const me = await db.findUserById(session.userId);
-    if (!me || me.role !== "admin" || me.banned) return c.html("<h1>403 forbidden</h1>", 403);
+    if (!me || me.role !== "admin" || me.banned)
+      return c.html("<h1>403 forbidden</h1>", 403);
     const theme = (c.req.query("theme") || "aphrody") as any;
     const html = AuthUiRenderer.renderAdminDashboard(
       await db.getStats(),
@@ -236,7 +240,10 @@ export function createUnifiedBackendApp(opts: { db?: IdentityDatabase } = {}) {
         // Explicit test transport: persist the rendered message instead of network delivery.
         const { mkdirSync } = await import("node:fs");
         mkdirSync(process.env.MAIL_OUTBOX_DIR, { recursive: true });
-        await Bun.write(`${process.env.MAIL_OUTBOX_DIR}/${Date.now()}-${email}.json`, JSON.stringify({ ...mailOptions, magicLinkUrl }));
+        await Bun.write(
+          `${process.env.MAIL_OUTBOX_DIR}/${Date.now()}-${email}.json`,
+          JSON.stringify({ ...mailOptions, magicLinkUrl }),
+        );
       } else {
         await dispatcher.send(mailOptions);
       }
@@ -289,23 +296,32 @@ export function createUnifiedBackendApp(opts: { db?: IdentityDatabase } = {}) {
     const session = await db.createSession({
       id: `ses_${crypto.randomUUID()}`,
       userId: user.id,
-      token: crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, ""),
+      token:
+        crypto.randomUUID().replace(/-/g, "") +
+        crypto.randomUUID().replace(/-/g, ""),
       expiresAt: new Date(Date.now() + 30 * 86400000).toISOString(),
       ipAddress: c.req.header("x-forwarded-for") || undefined,
       userAgent: c.req.header("user-agent"),
     });
-    c.header("Set-Cookie", `aphrody_session=${session.token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=2592000`);
+    c.header(
+      "Set-Cookie",
+      `aphrody_session=${session.token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=2592000`,
+    );
     return c.redirect("/auth/me");
   });
 
   // Session page (cookie or bearer)
   app.get("/auth/me", async (c) => {
-    const cookie = (c.req.header("cookie") || "").match(/aphrody_session=([a-f0-9]+)/)?.[1];
+    const cookie = (c.req.header("cookie") || "").match(
+      /aphrody_session=([a-f0-9]+)/,
+    )?.[1];
     await db.ensureReady();
     const session = cookie ? await db.findSessionByToken(cookie) : null;
     if (!session) return c.redirect("/auth/signin");
     const user = await db.findUserById(session.userId);
-    return c.html(`<!DOCTYPE html><html><body style="font-family:sans-serif;background:#09090b;color:#f4f4f5;padding:40px"><h1 id="who">Signed in as ${user?.email}</h1><p id="verified">email_verified=${user?.emailVerified}</p><a href="/profile/${user?.username}">Public profile</a></body></html>`);
+    return c.html(
+      `<!DOCTYPE html><html><body style="font-family:sans-serif;background:#09090b;color:#f4f4f5;padding:40px"><h1 id="who">Signed in as ${user?.email}</h1><p id="verified">email_verified=${user?.emailVerified}</p><a href="/profile/${user?.username}">Public profile</a></body></html>`,
+    );
   });
 
   // Current User / Identity Context

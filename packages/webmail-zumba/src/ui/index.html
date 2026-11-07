@@ -375,25 +375,79 @@
           + New Message
         </button>
 
-        <div class="folder-item active" role="button" tabindex="0" onclick="selectFolder('inbox')" onkeydown="if(event.key==='Enter'||event.key===' ')selectFolder('inbox')">
+        <div
+          class="folder-item active"
+          role="button"
+          tabindex="0"
+          onclick="selectFolder('inbox')"
+          onkeydown="
+            if (event.key === 'Enter' || event.key === ' ')
+              selectFolder('inbox');
+          "
+        >
           <span>Inbox</span>
           <span class="folder-badge" id="inboxCount">4</span>
         </div>
-        <div class="folder-item" role="button" tabindex="0" onclick="selectFolder('sent')" onkeydown="if(event.key==='Enter'||event.key===' ')selectFolder('sent')">
+        <div
+          class="folder-item"
+          role="button"
+          tabindex="0"
+          onclick="selectFolder('sent')"
+          onkeydown="
+            if (event.key === 'Enter' || event.key === ' ')
+              selectFolder('sent');
+          "
+        >
           <span>Sent</span>
           <span id="sentCount" style="font-size: 11px">18</span>
         </div>
-        <div class="folder-item" role="button" tabindex="0" onclick="selectFolder('drafts')" onkeydown="if(event.key==='Enter'||event.key===' ')selectFolder('drafts')">
+        <div
+          class="folder-item"
+          role="button"
+          tabindex="0"
+          onclick="selectFolder('drafts')"
+          onkeydown="
+            if (event.key === 'Enter' || event.key === ' ')
+              selectFolder('drafts');
+          "
+        >
           <span>Drafts</span>
           <span style="font-size: 11px">1</span>
         </div>
-        <div class="folder-item" role="button" tabindex="0" onclick="selectFolder('archive')" onkeydown="if(event.key==='Enter'||event.key===' ')selectFolder('archive')">
+        <div
+          class="folder-item"
+          role="button"
+          tabindex="0"
+          onclick="selectFolder('archive')"
+          onkeydown="
+            if (event.key === 'Enter' || event.key === ' ')
+              selectFolder('archive');
+          "
+        >
           <span>Archive</span>
         </div>
-        <div class="folder-item" role="button" tabindex="0" onclick="selectFolder('spam')" onkeydown="if(event.key==='Enter'||event.key===' ')selectFolder('spam')">
+        <div
+          class="folder-item"
+          role="button"
+          tabindex="0"
+          onclick="selectFolder('spam')"
+          onkeydown="
+            if (event.key === 'Enter' || event.key === ' ')
+              selectFolder('spam');
+          "
+        >
           <span>Spam</span>
         </div>
-        <div class="folder-item" role="button" tabindex="0" onclick="selectFolder('trash')" onkeydown="if(event.key==='Enter'||event.key===' ')selectFolder('trash')">
+        <div
+          class="folder-item"
+          role="button"
+          tabindex="0"
+          onclick="selectFolder('trash')"
+          onkeydown="
+            if (event.key === 'Enter' || event.key === ' ')
+              selectFolder('trash');
+          "
+        >
           <span>Trash</span>
         </div>
       </aside>
@@ -481,27 +535,52 @@
         </div>
 
         <div class="reader-body">
-          <iframe id="readerFrame" class="reader-frame" title="Message content"></iframe>
+          <iframe
+            id="readerFrame"
+            class="reader-frame"
+            title="Message content"
+          ></iframe>
         </div>
       </main>
     </div>
 
     <dialog id="compose-modal" aria-labelledby="compose-modal-title">
-      <h3 id="compose-modal-title" style="font-size: 16px; font-weight: 700; margin-bottom: 16px">
+      <h3
+        id="compose-modal-title"
+        style="font-size: 16px; font-weight: 700; margin-bottom: 16px"
+      >
         New Message (SMTP Relay + Cloudflare Edge)
       </h3>
       <form id="compose-form" onsubmit="submitCompose(event)">
         <div class="compose-field">
           <label for="compose-to">To</label>
-          <input id="compose-to" name="to" type="email" required placeholder="recipient@aphrody.com" />
+          <input
+            id="compose-to"
+            name="to"
+            type="email"
+            required
+            placeholder="recipient@aphrody.com"
+          />
         </div>
         <div class="compose-field">
           <label for="compose-subject">Subject</label>
-          <input id="compose-subject" name="subject" type="text" required placeholder="Subject" />
+          <input
+            id="compose-subject"
+            name="subject"
+            type="text"
+            required
+            placeholder="Subject"
+          />
         </div>
         <div class="compose-field">
           <label for="compose-body">Message</label>
-          <textarea id="compose-body" name="body" rows="6" required placeholder="Write your message..."></textarea>
+          <textarea
+            id="compose-body"
+            name="body"
+            rows="6"
+            required
+            placeholder="Write your message..."
+          ></textarea>
         </div>
         <div class="compose-actions">
           <button
@@ -580,7 +659,9 @@
         activeFolder = folder;
         const list = document.getElementById("messageList");
         list.innerHTML = "";
-        const items = sampleMails.filter((m) => (m.folder || "inbox") === folder);
+        const items = sampleMails.filter(
+          (m) => (m.folder || "inbox") === folder,
+        );
         items.forEach((m, i) => {
           const card = document.createElement("div");
           card.className = "message-card" + (i === 0 ? " active" : "");

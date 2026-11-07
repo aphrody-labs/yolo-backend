@@ -53,9 +53,11 @@ export class ZumbaWebmailEngine {
           .map((s) => s.trim())
           .filter(Boolean);
     const plain =
-      params.text || (params.html ? params.html.replace(/<[^>]+>/g, " ").trim() : "");
+      params.text ||
+      (params.html ? params.html.replace(/<[^>]+>/g, " ").trim() : "");
     const html =
-      params.html || `<p>${plain.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>`;
+      params.html ||
+      `<p>${plain.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>`;
     const msg: MailboxMessage = {
       id: `msg_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
       folder: params.folder || "sent",
