@@ -11,7 +11,12 @@ async fn main() {
         .route("/health", get(health_handler))
         .route("/", get(root_handler));
 
-    let addr = SocketAddr::from(([0, 0, 0, 0], 8796));
+    let port: u16 = std::env::var("PORT")
+        .ok()
+        .and_then(|p| p.parse().ok())
+        .unwrap_or(8796);
+
+    let addr = SocketAddr::from(([0, 0, 0, 0], port));
     tracing::info!("YOLO Backend Core Rust Server listening on {}", addr);
 
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
