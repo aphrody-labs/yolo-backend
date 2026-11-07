@@ -4,6 +4,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Aphrody Zumba Webmail (2026 Edition)</title>
+    <meta name="description" content="Client webmail multi-domaines (Hostinger, OVH, Cloudflare Mail, Resend) avec recherche instantanée et chiffrement." />
+    <link rel="canonical" href="https://yolo.aphrody.com/webmail" />
     <style>
       :root {
         --bg: #090D16;
@@ -341,22 +343,23 @@
     </style>
   </head>
   <body>
-    <a href="#main-reader" class="skip-link">Skip to message reader</a>
+    <a href="#main-content" class="skip-link">Skip to message reader</a>
     <!-- Top Navigation -->
     <header class="topbar">
       <div class="brand">
-        <svg viewBox="0 0 34 34" fill="none">
+        <svg viewBox="0 0 34 34" fill="none" width="34" height="34">
           <rect width="34" height="34" rx="9" fill="#2563EB" />
           <path d="M17 7L25 24H9L17 7Z" fill="white" opacity="0.9" />
           <circle cx="17" cy="18" r="3.5" fill="#38BDF8" />
         </svg>
-        <span>Zumba Webmail</span>
+        <h1 style="font-size:16px;font-weight:600;">Zumba Webmail</h1>
       </div>
 
       <div class="search-box">
         <input
           class="search-input"
           type="text"
+          aria-label="Search emails, headers, subjects"
           placeholder="Search emails, headers, subjects..."
         />
       </div>
@@ -370,7 +373,7 @@
     <!-- Workspace -->
     <div class="workspace">
       <!-- Folder Sidebar -->
-      <aside class="folders-pane">
+      <nav class="folders-pane" aria-label="Mail folders">
         <button class="btn-compose" onclick="composeEmail()">
           + New Message
         </button>
@@ -450,7 +453,7 @@
         >
           <span>Trash</span>
         </div>
-      </aside>
+      </nav>
 
       <!-- Messages List -->
       <section class="messages-pane">
@@ -467,7 +470,7 @@
       </section>
 
       <!-- Message Reader -->
-      <main id="main-reader" class="reader-pane">
+      <main id="main-content" class="reader-pane">
         <div class="reader-toolbar">
           <div>
             <button
