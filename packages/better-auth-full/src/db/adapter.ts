@@ -4,6 +4,8 @@
  */
 
 import { Database as SqliteDatabase } from "bun:sqlite";
+import { mkdirSync } from "node:fs";
+import { dirname } from "node:path";
 import {
   POSTGRES_SCHEMA,
   SQLITE_SCHEMA,
@@ -63,8 +65,6 @@ export class IdentityDatabase {
         "data/aphrody_identity.db";
       try {
         if (path !== ":memory:") {
-          const { mkdirSync } = require("node:fs");
-          const { dirname } = require("node:path");
           mkdirSync(dirname(path), { recursive: true });
         }
         this.sqliteDb = new SqliteDatabase(path);

@@ -34,7 +34,7 @@ export class PasswordVaultEngine {
   private static readonly KEY_LENGTH = 32;
   private static readonly IV_LENGTH = 12; // 96 bits for GCM
   private static readonly SALT_LENGTH = 16;
-  private static readonly ITERATIONS = 100000;
+  private static readonly ITERATIONS = 600000; // OWASP 2026 PBKDF2-HMAC-SHA512 standard
 
   /**
    * Derives a 256-bit encryption key from a master secret and salt using PBKDF2-HMAC-SHA512.

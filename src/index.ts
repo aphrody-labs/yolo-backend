@@ -26,6 +26,15 @@ import { ProviderRegistry } from "../packages/better-auth-full/src/providers/ind
 import { GoogleWorkspaceClient } from "../packages/google-workspace/src/index.js";
 import { MailDispatcher } from "../packages/mail-templates/src/dispatcher.js";
 
+function escapeHtml(raw: string): string {
+  return String(raw)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 export function createUnifiedBackendApp(opts: { db?: IdentityDatabase } = {}) {
   const app = new Hono();
   const oauthServer = new AphrodyOAuthServer();
@@ -265,7 +274,7 @@ export function createUnifiedBackendApp(opts: { db?: IdentityDatabase } = {}) {
           <body style="background:#09090b;color:#f4f4f5;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;">
             <div style="background:#121217;border:1px solid #27272a;border-radius:16px;padding:36px;max-width:420px;text-align:center;">
               <h2 style="color:#06b6d4;margin-bottom:12px;">Check your email</h2>
-              <p style="color:#a1a1aa;font-size:14px;line-height:1.5;">We dispatched a secure magic link to <strong>${email}</strong>. Click it to log in.</p>
+              <p style="color:#a1a1aa;font-size:14px;line-height:1.5;">We dispatched a secure magic link to <strong>${escapeHtml(email)}</strong>. Click it to log in.</p>
               <a href="/auth/signin" style="display:inline-block;margin-top:20px;color:#06b6d4;font-size:13px;text-decoration:none;">Back to Sign In</a>
             </div>
           </body>
@@ -303,26 +312,30 @@ export function createUnifiedBackendApp(opts: { db?: IdentityDatabase } = {}) {
       ipAddress: c.req.header("x-forwarded-for") || undefined,
       userAgent: c.req.header("user-agent"),
     });
-    c.header(
-      "Set-Cookie",
-      `aphrody_session=${session.token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=2592000`,
-    );
-    return c.redirect("/auth/me");
-  });
+      const secureFlag =
+        process.env.NODE_ENV === "production" || c.req.url.startsWith("https://")
+          ? "; Secure"
+          : "";
+      c.header(
+        "Set-Cookie",
+        `aphrody_session=${session.token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=2592000${secureFlag}`,
+      );
+      return c.redirect("/auth/me");
+    });
 
-  // Session page (cookie or bearer)
-  app.get("/auth/me", async (c) => {
-    const cookie = (c.req.header("cookie") || "").match(
-      /aphrody_session=([a-f0-9]+)/,
-    )?.[1];
-    await db.ensureReady();
-    const session = cookie ? await db.findSessionByToken(cookie) : null;
-    if (!session) return c.redirect("/auth/signin");
-    const user = await db.findUserById(session.userId);
-    return c.html(
-      `<!DOCTYPE html><html><body style="font-family:sans-serif;background:#09090b;color:#f4f4f5;padding:40px"><h1 id="who">Signed in as ${user?.email}</h1><p id="verified">email_verified=${user?.emailVerified}</p><a href="/profile/${user?.username}">Public profile</a></body></html>`,
-    );
-  });
+    // Session page (cookie or bearer)
+    app.get("/auth/me", async (c) => {
+      const cookie = (c.req.header("cookie") || "").match(
+        /aphrody_session=([a-f0-9]+)/,
+      )?.[1];
+      await db.ensureReady();
+      const session = cookie ? await db.findSessionByToken(cookie) : null;
+      if (!session) return c.redirect("/auth/signin");
+      const user = await db.findUserById(session.userId);
+      return c.html(
+        `<!DOCTYPE html><html><body style="font-family:sans-serif;background:#09090b;color:#f4f4f5;padding:40px"><h1 id="who">Signed in as ${escapeHtml(user?.email ?? "")}</h1><p id="verified">email_verified=${Boolean(user?.emailVerified)}</p><a href="/profile/${encodeURIComponent(user?.username ?? "")}">Public profile</a></body></html>`,
+      );
+    });
 
   // Current User / Identity Context
   app.get("/api/auth/me", async (c) => {
