@@ -1,0 +1,11 @@
+{
+  "name": "@yolo-rs/hostinger-mail",
+  "version": "1.0.0",
+  "description": "Hostinger Mail API client for automated mailbox provisioning, forwarders, and KVM 8 VPS integration.",
+  "type": "module",
+  "main": "src/index.ts",
+  "sideEffects": false,
+  "scripts": {
+    "test": "bun test"
+  }
+}

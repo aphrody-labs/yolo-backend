@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Aphrody Zumba Webmail (2026 Edition)</title>
+  <style>
+    :root {
+      --bg: #090D16;
+      --sidebar-bg: #0C1222;
+      --panel-bg: #0F172A;
+      --card-hover: rgba(255, 255, 255, 0.04);
+      --border: #1E293B;
+      --accent: #2563EB;
+      --accent-hover: #3B82F6;
+      --text: #F1F5F9;
+      --text-muted: #94A3B8;
+      --success: #10B981;
+      --danger: #EF4444;
+      --badge-bg: rgba(37, 99, 235, 0.2);
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+    /* Topbar */
+    .topbar {
+      height: 56px;
+      background: var(--sidebar-bg);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      flex-shrink: 0;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 16px;
+      letter-spacing: -0.02em;
+    }
+    .brand svg {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+    }
+    .search-box {
+      flex: 1;
+      max-width: 480px;
+      margin: 0 24px;
+    }
+    .search-input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 14px;
+      color: var(--text);
+      font-size: 13px;
+      outline: none;
+    }
+    .search-input:focus {
+      border-color: var(--accent);
+    }
+    .account-badge {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    /* Layout */
+    .workspace {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+    /* Folder Sidebar */
+    .folders-pane {
+      width: 240px;
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      padding: 16px 12px;
+    }
+    .btn-compose {
+      background: var(--accent);
+      color: #FFF;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 20px;
+      transition: background 0.15s ease;
+    }
+    .btn-compose:hover {
+      background: var(--accent-hover);
+    }
+    .folder-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 9px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      color: var(--text-muted);
+      cursor: pointer;
+      margin-bottom: 2px;
+      transition: all 0.15s ease;
+    }
+    .folder-item:hover {
+      background: var(--card-hover);
+      color: var(--text);
+    }
+    .folder-item.active {
+      background: var(--badge-bg);
+      color: #60A5FA;
+      font-weight: 600;
+    }
+    .folder-badge {
+      background: var(--accent);
+      color: #FFF;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 9999px;
+    }
+    /* Messages List */
+    .messages-pane {
+      width: 380px;
+      background: var(--panel-bg);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+    .messages-header {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .messages-list {
+      flex: 1;
+      overflow-y: auto;
+    }
+    .message-card {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .message-card:hover {
+      background: var(--card-hover);
+    }
+    .message-card.active {
+      background: rgba(37, 99, 235, 0.12);
+      border-left: 3px solid var(--accent);
+    }
+    .message-from {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .message-date {
+      font-size: 11px;
+      font-weight: 400;
+      color: var(--text-muted);
+    }
+    .message-subject {
+      font-size: 13px;
+      font-weight: 600;
+      color: #E2E8F0;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .message-snippet {
+      font-size: 12px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    /* Reader Pane */
+    .reader-pane {
+      flex: 1;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .reader-toolbar {
+      height: 52px;
+      border-bottom: 1px solid var(--border);
+      background: var(--panel-bg);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+    }
+    .reader-header {
+      padding: 24px;
+      border-bottom: 1px solid var(--border);
+      background: var(--panel-bg);
+    }
+    .reader-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .sender-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .verified-pill {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--success);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .reader-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 30px;
+    }
+    .reader-frame {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: #FFF;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Top Navigation -->
+  <header class="topbar">
+    <div class="brand">
+      <svg viewBox="0 0 34 34" fill="none">
+        <rect width="34" height="34" rx="9" fill="#2563EB" />
+        <path d="M17 7L25 24H9L17 7Z" fill="white" opacity="0.9" />
+        <circle cx="17" cy="18" r="3.5" fill="#38BDF8" />
+      </svg>
+      <span>Zumba Webmail</span>
+    </div>
+
+    <div class="search-box">
+      <input class="search-input" type="text" placeholder="Search emails, headers, subjects..." />
+    </div>
+
+    <div class="account-badge">
+      <span>contact@aphrody.com</span>
+      <span class="verified-pill">Hostinger + OVH Synced</span>
+    </div>
+  </header>
+
+  <!-- Workspace -->
+  <div class="workspace">
+    <!-- Folder Sidebar -->
+    <aside class="folders-pane">
+      <button class="btn-compose" onclick="composeEmail()">
+        + New Message
+      </button>
+
+      <div class="folder-item active" onclick="selectFolder('inbox')">
+        <span>Inbox</span>
+        <span class="folder-badge" id="inboxCount">4</span>
+      </div>
+      <div class="folder-item" onclick="selectFolder('sent')">
+        <span>Sent</span>
+        <span id="sentCount" style="font-size: 11px;">18</span>
+      </div>
+      <div class="folder-item" onclick="selectFolder('drafts')">
+        <span>Drafts</span>
+        <span style="font-size: 11px;">1</span>
+      </div>
+      <div class="folder-item" onclick="selectFolder('archive')">
+        <span>Archive</span>
+      </div>
+      <div class="folder-item" onclick="selectFolder('spam')">
+        <span>Spam</span>
+      </div>
+      <div class="folder-item" onclick="selectFolder('trash')">
+        <span>Trash</span>
+      </div>
+    </aside>
+
+    <!-- Messages List -->
+    <section class="messages-pane">
+      <div class="messages-header">
+        <span id="folderTitle">Inbox</span>
+        <span style="font-size: 11px; color: var(--text-muted);">Updated just now</span>
+      </div>
+
+      <div class="messages-list" id="messageList">
+        <!-- Message cards rendered via JS -->
+      </div>
+    </section>
+
+    <!-- Message Reader -->
+    <main class="reader-pane">
+      <div class="reader-toolbar">
+        <div>
+          <button style="background: transparent; border: 1px solid var(--border); color: var(--text); padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; margin-right: 8px;">Reply</button>
+          <button style="background: transparent; border: 1px solid var(--border); color: var(--text); padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; margin-right: 8px;">Forward</button>
+          <button style="background: transparent; border: 1px solid var(--border); color: var(--text); padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">Archive</button>
+        </div>
+        <div style="font-size: 12px; color: var(--text-muted);" id="readerMessageId">
+          ID: msg_in_2026_091a
+        </div>
+      </div>
+
+      <div class="reader-header">
+        <h2 class="reader-title" id="readerSubject">Welcome to Aphrody WebOS & Edge Cloud</h2>
+        <div class="sender-meta">
+          <strong id="readerFrom">notifications@aphrody.app</strong>
+          <span>to <span id="readerTo">contact@aphrody.com</span></span>
+          <span class="verified-pill">DKIM &bull; SPF PASS</span>
+          <span style="margin-left: auto;" id="readerDate">Today, 04:32 UTC</span>
+        </div>
+      </div>
+
+      <div class="reader-body">
+        <iframe id="readerFrame" class="reader-frame"></iframe>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const sampleMails = [
+      {
+        id: "msg_1",
+        from: "Aphrody Cloud OS <notifications@aphrody.app>",
+        to: "contact@aphrody.com",
+        subject: "Welcome to Aphrody WebOS & Edge Cloud",
+        snippet: "Your account has been provisioned on our high-performance Cloudflare Edge...",
+        date: "04:32",
+        html: `<h2>Welcome to Aphrody WebOS</h2><p>Your account is active on the WireGuard mesh cluster and Cloudflare edge.</p>`
+      },
+      {
+        id: "msg_2",
+        from: "Aphrody System <noreply@aphrody.app>",
+        to: "contact@aphrody.com",
+        subject: "[DEPLOYMENT] Mesh Gateway v1.1.0 Released",
+        snippet: "Deployment verified on Hostinger prod (72.60.186.43) and OVH fleet...",
+        date: "04:15",
+        html: `<h2>Deployment Verified</h2><p>Cluster synchronized across all 3 nodes without errors.</p>`
+      },
+      {
+        id: "msg_3",
+        from: "Aphrody Security <security@aphrody.app>",
+        to: "contact@aphrody.com",
+        subject: "Security Alert: New Sign-in Detected",
+        snippet: "A new session was established from 72.60.186.43 via Chrome 134...",
+        date: "03:55",
+        html: `<h2>Security Alert</h2><p>Session created from Hostinger KVM 8 host.</p>`
+      },
+      {
+        id: "msg_4",
+        from: "Aphrody Billing <billing@aphrody.app>",
+        to: "contact@aphrody.com",
+        subject: "Invoice INV-2026-0891 from Aphrody Labs",
+        snippet: "Receipt for €180.00 paid in full for annual WebOS & edge allocation...",
+        date: "03:10",
+        html: `<h2>Invoice Receipt</h2><p>Paid in full. Thank you for your business.</p>`
+      }
+    ];
+
+    function init() {
+      const list = document.getElementById("messageList");
+      list.innerHTML = "";
+      sampleMails.forEach((m, i) => {
+        const card = document.createElement("div");
+        card.className = "message-card" + (i === 0 ? " active" : "");
+        card.onclick = () => selectMail(m, card);
+        card.innerHTML = `
+          <div class="message-from">
+            <span>${m.from.split("<")[0].trim()}</span>
+            <span class="message-date">${m.date}</span>
+          </div>
+          <div class="message-subject">${m.subject}</div>
+          <div class="message-snippet">${m.snippet}</div>
+        `;
+        list.appendChild(card);
+      });
+      selectMail(sampleMails[0]);
+    }
+
+    function selectMail(m, element) {
+      if (element) {
+        document.querySelectorAll(".message-card").forEach(c => c.classList.remove("active"));
+        element.classList.add("active");
+      }
+      document.getElementById("readerSubject").innerText = m.subject;
+      document.getElementById("readerFrom").innerText = m.from;
+      document.getElementById("readerTo").innerText = m.to;
+      document.getElementById("readerDate").innerText = m.date;
+      document.getElementById("readerMessageId").innerText = `ID: ${m.id}`;
+      document.getElementById("readerFrame").srcdoc = m.html;
+    }
+
+    function composeEmail() {
+      alert("Opening Compose modal (SMTP Relay to Hostinger KVM 8 & Cloudflare Edge ready)");
+    }
+
+    window.addEventListener("DOMContentLoaded", init);
+  </script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "name": "@yolo-rs/webmail-zumba",
+  "version": "1.0.0",
+  "description": "High-performance modern Webmail server & GUI replacing OVH Webmail, Roundcube, and Zimbra (Zumba Edition).",
+  "type": "module",
+  "main": "src/index.ts",
+  "sideEffects": false,
+  "scripts": {
+    "test": "bun test",
+    "start": "bun run src/server.ts"
+  },
+  "dependencies": {
+    "hono": "^4.13.16"
+  }
+}

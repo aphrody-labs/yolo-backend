@@ -1,0 +1,14 @@
+{
+  "name": "@yolo-rs/cloudflare-mail",
+  "version": "1.0.0",
+  "description": "Cloudflare Email Routing, Sending, DNS Verification, and Edge Worker pipeline with D1 persistence.",
+  "type": "module",
+  "main": "src/index.ts",
+  "sideEffects": false,
+  "scripts": {
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@cloudflare/workers-types": "^5.20261107.1"
+  }
+}

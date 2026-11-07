@@ -1,0 +1,11 @@
+{
+  "name": "@yolo-rs/google-workspace",
+  "version": "1.0.0",
+  "description": "Google Workspace & GCP client with Gmail API, Service Account JWT bridge, and GCS archive integration.",
+  "type": "module",
+  "main": "src/index.ts",
+  "sideEffects": false,
+  "scripts": {
+    "test": "bun test"
+  }
+}

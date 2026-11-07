@@ -1,0 +1,14 @@
+[test]
+coverage = false
+preload = []
+
+[install]
+production = false
+exact = false
+save = true
+
+[compile]
+target = "bun"
+minify = true
+bytecode = true
+trim = true

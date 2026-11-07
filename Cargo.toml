@@ -1,0 +1,24 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/yolo-backend-core",
+]
+
+[workspace.package]
+version = "1.0.0"
+edition = "2024"
+authors = ["Aphrody Labs <contact@aphrody.com>"]
+license = "Apache-2.0"
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = true
+overflow-checks = false
+
+[profile.bench]
+opt-level = 3
+lto = "fat"
+codegen-units = 1

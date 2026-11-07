@@ -1,0 +1,14 @@
+{
+  "name": "@yolo-rs/resend-engine",
+  "version": "1.0.0",
+  "description": "High-performance autonomous Resend-compatible transactional email engine with batching, webhooks, and analytics.",
+  "type": "module",
+  "main": "src/index.ts",
+  "sideEffects": false,
+  "scripts": {
+    "test": "bun test"
+  },
+  "dependencies": {
+    "hono": "^4.13.16"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "@yolo-rs/better-auth-full",
+  "version": "1.0.0",
+  "description": "Complete Better-Auth fork and universal OAuth2/OIDC server suite with Cloudflare Turnstile, multi-tenancy, and Web Standards client SDK.",
+  "type": "module",
+  "main": "src/index.ts",
+  "sideEffects": false,
+  "scripts": {
+    "test": "bun test"
+  },
+  "dependencies": {
+    "better-auth": "^1.7.18"
+  }
+}

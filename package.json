@@ -1,0 +1,29 @@
+{
+  "name": "@yolo-rs/yolo-backend",
+  "version": "1.0.0-canary.20261107",
+  "description": "Aphrody Universal Backend Monorepo: Resend Engine, Cloudflare Mail, OVH Webmail (Zumba), Hostinger Mail, and Complete Better-Auth Suite with Google Workspace & Cloudflare Best Practices (Bun AoT + Rust LTO).",
+  "private": true,
+  "type": "module",
+  "packageManager": "bun@1.4.4",
+  "sideEffects": false,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "test": "bun test",
+    "test:coverage": "bun test --coverage",
+    "check": "bun check",
+    "fmt": "bun fmt",
+    "lint": "bun lint",
+    "compile:aot": "bun run scripts/compile-aot.ts",
+    "build:rust": "bun run scripts/build-rust.ts",
+    "build:all": "bun run compile:aot && bun run build:rust"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261107.1",
+    "@types/bun": "^1.4.4"
+  },
+  "dependencies": {
+    "hono": "^4.13.16"
+  }
+}

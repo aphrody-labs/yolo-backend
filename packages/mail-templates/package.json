@@ -1,0 +1,11 @@
+{
+  "name": "@yolo-rs/mail-templates",
+  "version": "1.0.0",
+  "description": "2026 Responsive HTML/TSX Email Templates and Multi-Provider Dispatcher with Dark Mode and SVG Branding.",
+  "type": "module",
+  "main": "src/index.ts",
+  "sideEffects": false,
+  "scripts": {
+    "test": "bun test"
+  }
+}
