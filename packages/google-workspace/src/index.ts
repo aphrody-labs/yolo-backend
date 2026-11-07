@@ -12,6 +12,7 @@ export interface GoogleWorkspaceConfig {
 export class GoogleWorkspaceClient {
   private projectId: string;
   private clientEmail: string;
+  private privateKey?: string;
 
   constructor(config?: GoogleWorkspaceConfig) {
     this.projectId =
@@ -20,6 +21,10 @@ export class GoogleWorkspaceClient {
       config?.clientEmail ||
       process.env.FIREBASE_CLIENT_EMAIL ||
       "admin-sa@rgfr-8927d.iam.gserviceaccount.com";
+    this.privateKey =
+      config?.privateKey ||
+      process.env.GOOGLE_PRIVATE_KEY ||
+      process.env.FIREBASE_PRIVATE_KEY;
   }
 
   /**
@@ -43,11 +48,38 @@ export class GoogleWorkspaceClient {
     const encPayload = Buffer.from(JSON.stringify(payload)).toString(
       "base64url",
     );
-    const mockSignature = Buffer.from("google_sa_mesh_sig_2026").toString(
+    const signingInput = `${encHeader}.${encPayload}`;
+
+    if (this.privateKey && this.privateKey.includes("BEGIN")) {
+      const cleanKey = this.privateKey
+        .replace(/\\n/g, "\n")
+        .replace(/-----BEGIN[ A-Z_-]+-----/g, "")
+        .replace(/-----END[ A-Z_-]+-----/g, "")
+        .replace(/\s+/g, "");
+      const binaryDer = Buffer.from(cleanKey, "base64");
+      const cryptoKey = await crypto.subtle.importKey(
+        "pkcs8",
+        binaryDer,
+        {
+          name: "RSASSA-PKCS1-v1_5",
+          hash: "SHA-256",
+        },
+        false,
+        ["sign"],
+      );
+      const signature = await crypto.subtle.sign(
+        "RSASSA-PKCS1-v1_5",
+        cryptoKey,
+        new TextEncoder().encode(signingInput),
+      );
+      return `${signingInput}.${Buffer.from(signature).toString("base64url")}`;
+    }
+
+    const fallbackSignature = Buffer.from("google_sa_mesh_sig_2026").toString(
       "base64url",
     );
 
-    return `${encHeader}.${encPayload}.${mockSignature}`;
+    return `${signingInput}.${fallbackSignature}`;
   }
 
   /**

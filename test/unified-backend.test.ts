@@ -89,15 +89,25 @@ describe("Hostinger Mail & VPS Integration", () => {
 });
 
 describe("Zumba Webmail Engine", () => {
-  test("Loads default folders and generates responsive UI", () => {
+  test("Loads default folders, sends messages, and generates responsive UI", () => {
     const zumba = new ZumbaWebmailEngine();
     const inbox = zumba.getFolderMessages("inbox");
     expect(inbox.length).toBeGreaterThan(0);
     expect(inbox[0].from).toContain("notifications@aphrody.app");
 
+    const sentMsg = zumba.sendMessage({
+      to: "ops@aphrody.com",
+      subject: "Zumba Compose Test",
+      text: "Dispatched from compose dialog",
+    });
+    expect(sentMsg.folder).toBe("sent");
+    expect(zumba.getFolderMessages("sent").some((m) => m.id === sentMsg.id)).toBe(true);
+
     const htmlUi = zumba.getHtmlUi();
     expect(htmlUi).toContain("Zumba Webmail");
     expect(htmlUi).toContain("Hostinger + OVH Synced");
+    expect(htmlUi).toContain("compose-modal");
+    expect(htmlUi).toContain("skip-link");
   });
 });
 
