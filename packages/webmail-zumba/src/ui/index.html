@@ -375,25 +375,25 @@
           + New Message
         </button>
 
-        <div class="folder-item active" onclick="selectFolder('inbox')">
+        <div class="folder-item active" role="button" tabindex="0" onclick="selectFolder('inbox')" onkeydown="if(event.key==='Enter'||event.key===' ')selectFolder('inbox')">
           <span>Inbox</span>
           <span class="folder-badge" id="inboxCount">4</span>
         </div>
-        <div class="folder-item" onclick="selectFolder('sent')">
+        <div class="folder-item" role="button" tabindex="0" onclick="selectFolder('sent')" onkeydown="if(event.key==='Enter'||event.key===' ')selectFolder('sent')">
           <span>Sent</span>
           <span id="sentCount" style="font-size: 11px">18</span>
         </div>
-        <div class="folder-item" onclick="selectFolder('drafts')">
+        <div class="folder-item" role="button" tabindex="0" onclick="selectFolder('drafts')" onkeydown="if(event.key==='Enter'||event.key===' ')selectFolder('drafts')">
           <span>Drafts</span>
           <span style="font-size: 11px">1</span>
         </div>
-        <div class="folder-item" onclick="selectFolder('archive')">
+        <div class="folder-item" role="button" tabindex="0" onclick="selectFolder('archive')" onkeydown="if(event.key==='Enter'||event.key===' ')selectFolder('archive')">
           <span>Archive</span>
         </div>
-        <div class="folder-item" onclick="selectFolder('spam')">
+        <div class="folder-item" role="button" tabindex="0" onclick="selectFolder('spam')" onkeydown="if(event.key==='Enter'||event.key===' ')selectFolder('spam')">
           <span>Spam</span>
         </div>
-        <div class="folder-item" onclick="selectFolder('trash')">
+        <div class="folder-item" role="button" tabindex="0" onclick="selectFolder('trash')" onkeydown="if(event.key==='Enter'||event.key===' ')selectFolder('trash')">
           <span>Trash</span>
         </div>
       </aside>
