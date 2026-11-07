@@ -3,7 +3,12 @@ import { renderEmailBase } from "./base.js";
 export interface NoreplyNotificationProps {
   email: string;
   senderDomain?: "aphrody.com" | "aphrody.app";
-  category: "DEPLOYMENT" | "SYSTEM_SYNC" | "BACKUP" | "BILLING_SUMMARY" | "SECURITY_DIGEST";
+  category:
+    | "DEPLOYMENT"
+    | "SYSTEM_SYNC"
+    | "BACKUP"
+    | "BILLING_SUMMARY"
+    | "SECURITY_DIGEST";
   title: string;
   summary: string;
   details: Array<{ label: string; value: string }>;
@@ -28,7 +33,7 @@ export function renderNoreplyNotification(props: NoreplyNotificationProps): {
       <td style="padding: 6px 0; color: #64748B; width: 140px; font-size: 13px;">&bull; <strong>${d.label}:</strong></td>
       <td style="padding: 6px 0; color: #0F172A; font-size: 13px; font-family: monospace;">${d.value}</td>
     </tr>
-  `
+  `,
     )
     .join("");
 

@@ -51,7 +51,8 @@ export class ZumbaWebmailEngine {
         from: "Aphrody Cloud OS <notifications@aphrody.app>",
         to: ["contact@aphrody.com"],
         subject: "Welcome to Aphrody WebOS & Edge Cloud",
-        snippet: "Your account has been provisioned on our high-performance Cloudflare Edge...",
+        snippet:
+          "Your account has been provisioned on our high-performance Cloudflare Edge...",
         date: new Date().toISOString(),
         html: `<h2>Welcome to Aphrody WebOS</h2><p>Your account is active on the WireGuard mesh cluster and Cloudflare edge.</p>`,
         text: "Welcome to Aphrody WebOS. Your account is active on the WireGuard mesh cluster and Cloudflare edge.",
@@ -64,7 +65,8 @@ export class ZumbaWebmailEngine {
         from: "Aphrody System <noreply@aphrody.app>",
         to: ["contact@aphrody.com"],
         subject: "[DEPLOYMENT] Mesh Gateway v1.1.0 Released",
-        snippet: "Deployment verified on Hostinger prod (72.60.186.43) and OVH fleet...",
+        snippet:
+          "Deployment verified on Hostinger prod (72.60.186.43) and OVH fleet...",
         date: new Date().toISOString(),
         html: `<h2>Deployment Verified</h2><p>Cluster synchronized across all 3 nodes without errors.</p>`,
         text: "Deployment verified on Hostinger prod (72.60.186.43) and OVH fleet.",

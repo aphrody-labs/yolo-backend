@@ -1,8 +1,6 @@
 [workspace]
 resolver = "2"
-members = [
-    "crates/yolo-backend-core",
-]
+members = ["crates/yolo-backend-core"]
 
 [workspace.package]
 version = "1.0.0"

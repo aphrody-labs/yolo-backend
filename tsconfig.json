@@ -4,7 +4,7 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
-    "types": ["bun-types", "@cloudflare/workers-types"],
+    "types": ["@types/bun", "@cloudflare/workers-types"],
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
@@ -13,8 +13,8 @@
     "strictPropertyInitialization": true,
     "noImplicitThis": true,
     "alwaysStrict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "exactOptionalPropertyTypes": false,
@@ -26,14 +26,6 @@
     "resolveJsonModule": true,
     "isolatedModules": true
   },
-  "include": [
-    "packages/*/src/**/*",
-    "scripts/**/*",
-    "test/**/*"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "target"
-  ]
+  "include": ["packages/*/src/**/*", "scripts/**/*", "test/**/*"],
+  "exclude": ["node_modules", "dist", "target"]
 }

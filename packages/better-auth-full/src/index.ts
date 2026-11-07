@@ -4,3 +4,8 @@ export * from "./client-sdk.js";
 export * from "./providers.js";
 export * from "./firebase-bridge.js";
 export * from "./schema.js";
+export * from "./db/schema.js";
+export * from "./db/adapter.js";
+export * from "./providers/index.js";
+export * from "./vault/index.js";
+export * from "./ui/index.js";

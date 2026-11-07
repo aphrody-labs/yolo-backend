@@ -28,7 +28,10 @@ export class AphrodyAuthClient {
   private cacheTtlMs: number;
 
   constructor(options?: ClientSdkOptions) {
-    this.issuerUrl = options?.issuerUrl || process.env.OAUTH_ISSUER || "https://auth.aphrody.app";
+    this.issuerUrl =
+      options?.issuerUrl ||
+      process.env.OAUTH_ISSUER ||
+      "https://auth.aphrody.app";
     this.jwtSecret =
       options?.jwtSecret ||
       process.env.BETTER_AUTH_SECRET ||
@@ -39,7 +42,9 @@ export class AphrodyAuthClient {
   /**
    * Extracts and validates Bearer token from standard Request or Authorization header
    */
-  async authenticate(reqOrHeader: Request | string | null | undefined): Promise<AuthenticatedUser | null> {
+  async authenticate(
+    reqOrHeader: Request | string | null | undefined,
+  ): Promise<AuthenticatedUser | null> {
     let authHeader = "";
     if (typeof reqOrHeader === "string") {
       authHeader = reqOrHeader;
@@ -90,7 +95,10 @@ export class AphrodyAuthClient {
     return async (c: any, next: () => Promise<void>) => {
       const user = await this.authenticate(c.req.raw);
       if (!user) {
-        return c.json({ error: "Unauthorized: Missing or invalid Bearer token" }, 401);
+        return c.json(
+          { error: "Unauthorized: Missing or invalid Bearer token" },
+          401,
+        );
       }
 
       if (requiredRoles && requiredRoles.length > 0) {
@@ -110,8 +118,11 @@ export class AphrodyAuthClient {
    */
   async protect(
     req: Request,
-    requiredRoles?: string[]
-  ): Promise<{ authorized: true; user: AuthenticatedUser } | { authorized: false; response: Response }> {
+    requiredRoles?: string[],
+  ): Promise<
+    | { authorized: true; user: AuthenticatedUser }
+    | { authorized: false; response: Response }
+  > {
     const user = await this.authenticate(req);
     if (!user) {
       return {
@@ -132,7 +143,9 @@ export class AphrodyAuthClient {
     return { authorized: true, user };
   }
 
-  private async verifyJwtHs256(token: string): Promise<Record<string, any> | null> {
+  private async verifyJwtHs256(
+    token: string,
+  ): Promise<Record<string, any> | null> {
     try {
       const parts = token.split(".");
       if (parts.length !== 3) return null;
@@ -145,19 +158,21 @@ export class AphrodyAuthClient {
         new TextEncoder().encode(this.jwtSecret),
         { name: "HMAC", hash: "SHA-256" },
         false,
-        ["verify"]
+        ["verify"],
       );
 
       const isValid = await crypto.subtle.verify(
         "HMAC",
         key,
         Buffer.from(signature, "base64url"),
-        new TextEncoder().encode(message)
+        new TextEncoder().encode(message),
       );
 
       if (!isValid) return null;
 
-      const payload = JSON.parse(Buffer.from(parts[1], "base64url").toString("utf8"));
+      const payload = JSON.parse(
+        Buffer.from(parts[1], "base64url").toString("utf8"),
+      );
       if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
         return null;
       }

@@ -8,7 +8,11 @@ export interface MagicLinkTemplateProps {
   ipAddress?: string;
 }
 
-export function renderMagicLinkEmail(props: MagicLinkTemplateProps): { html: string; text: string; subject: string } {
+export function renderMagicLinkEmail(props: MagicLinkTemplateProps): {
+  html: string;
+  text: string;
+  subject: string;
+} {
   const subject = "Sign in to Aphrody (Magic Link)";
   const ttl = props.expiresInMinutes || 15;
 

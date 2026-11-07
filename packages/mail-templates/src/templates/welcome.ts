@@ -7,7 +7,11 @@ export interface WelcomeTemplateProps {
   apiKeyPrefix?: string;
 }
 
-export function renderWelcomeEmail(props: WelcomeTemplateProps): { html: string; text: string; subject: string } {
+export function renderWelcomeEmail(props: WelcomeTemplateProps): {
+  html: string;
+  text: string;
+  subject: string;
+} {
   const subject = "Welcome to Aphrody WebOS & Edge Cloud";
   const name = props.name || props.email.split("@")[0];
   const dashboardUrl = props.dashboardUrl || "https://aphrody.app/dashboard";
@@ -50,7 +54,8 @@ export function renderWelcomeEmail(props: WelcomeTemplateProps): { html: string;
   `;
 
   const html = renderEmailBase({
-    previewText: "Your Aphrody WebOS account is ready on our global edge network.",
+    previewText:
+      "Your Aphrody WebOS account is ready on our global edge network.",
     title: "Welcome to Aphrody",
     badge: { text: "Onboarding Complete", variant: "success" },
     contentHtml,

@@ -15,14 +15,21 @@ export interface InvoiceTemplateProps {
   pdfUrl?: string;
 }
 
-export function renderInvoiceEmail(props: InvoiceTemplateProps): { html: string; text: string; subject: string } {
+export function renderInvoiceEmail(props: InvoiceTemplateProps): {
+  html: string;
+  text: string;
+  subject: string;
+} {
   const subject = `Invoice ${props.invoiceId} from Aphrody Labs`;
-  const vatRate = props.vatRatePercent !== undefined ? props.vatRatePercent : 20;
+  const vatRate =
+    props.vatRatePercent !== undefined ? props.vatRatePercent : 20;
 
   const subtotal = props.items.reduce((acc, item) => acc + item.amountEur, 0);
   const vatAmount = subtotal * (vatRate / 100);
   const total = subtotal + vatAmount;
-  const pdfUrl = props.pdfUrl || `https://aphrody.app/billing/invoices/${props.invoiceId}.pdf`;
+  const pdfUrl =
+    props.pdfUrl ||
+    `https://aphrody.app/billing/invoices/${props.invoiceId}.pdf`;
 
   const itemsRows = props.items
     .map(
@@ -36,7 +43,7 @@ export function renderInvoiceEmail(props: InvoiceTemplateProps): { html: string;
         €${item.amountEur.toFixed(2)}
       </td>
     </tr>
-  `
+  `,
     )
     .join("");
 
@@ -90,7 +97,10 @@ export function renderInvoiceEmail(props: InvoiceTemplateProps): { html: string;
     },
     secondaryLinks: [
       { label: "Billing Portal", url: "https://aphrody.app/billing" },
-      { label: "Manage Payment Methods", url: "https://aphrody.app/billing/payment-methods" },
+      {
+        label: "Manage Payment Methods",
+        url: "https://aphrody.app/billing/payment-methods",
+      },
     ],
     recipientEmail: props.email,
   });

@@ -14,7 +14,8 @@ export class GoogleWorkspaceClient {
   private clientEmail: string;
 
   constructor(config?: GoogleWorkspaceConfig) {
-    this.projectId = config?.projectId || process.env.GOOGLE_CLOUD_PROJECT || "aphrody";
+    this.projectId =
+      config?.projectId || process.env.GOOGLE_CLOUD_PROJECT || "aphrody";
     this.clientEmail =
       config?.clientEmail ||
       process.env.FIREBASE_CLIENT_EMAIL ||
@@ -39,8 +40,12 @@ export class GoogleWorkspaceClient {
     };
 
     const encHeader = Buffer.from(JSON.stringify(header)).toString("base64url");
-    const encPayload = Buffer.from(JSON.stringify(payload)).toString("base64url");
-    const mockSignature = Buffer.from("google_sa_mesh_sig_2026").toString("base64url");
+    const encPayload = Buffer.from(JSON.stringify(payload)).toString(
+      "base64url",
+    );
+    const mockSignature = Buffer.from("google_sa_mesh_sig_2026").toString(
+      "base64url",
+    );
 
     return `${encHeader}.${encPayload}.${mockSignature}`;
   }
@@ -55,7 +60,9 @@ export class GoogleWorkspaceClient {
     html: string;
     text?: string;
   }): string {
-    const recipients = Array.isArray(params.to) ? params.to.join(", ") : params.to;
+    const recipients = Array.isArray(params.to)
+      ? params.to.join(", ")
+      : params.to;
     const boundary = `----=_Part_${Date.now()}_${Math.random().toString(36).substring(2)}`;
     const textBody = params.text || params.html.replace(/<[^>]+>/g, " ").trim();
 

@@ -45,9 +45,21 @@ const sampleData: Record<EmailTemplateName, any> = {
     invoiceId: "INV-2026-0891",
     invoiceDate: "November 7, 2026",
     items: [
-      { description: "Aphrody WebOS Pro Tier (Annual)", period: "2026-11-07 to 2027-11-07", amountEur: 120.0 },
-      { description: "Cloudflare D1 & KV Distributed Edge Storage", period: "Monthly allocation", amountEur: 15.0 },
-      { description: "WireGuard Mesh Failover Gateway (3 VPS Nodes)", period: "Dedicated routing", amountEur: 25.0 },
+      {
+        description: "Aphrody WebOS Pro Tier (Annual)",
+        period: "2026-11-07 to 2027-11-07",
+        amountEur: 120.0,
+      },
+      {
+        description: "Cloudflare D1 & KV Distributed Edge Storage",
+        period: "Monthly allocation",
+        amountEur: 15.0,
+      },
+      {
+        description: "WireGuard Mesh Failover Gateway (3 VPS Nodes)",
+        period: "Dedicated routing",
+        amountEur: 25.0,
+      },
     ],
     vatRatePercent: 20,
   },
@@ -67,9 +79,21 @@ const sampleData: Record<EmailTemplateName, any> = {
   },
   "password-reset": {
     email: "contact@aphrody.com",
-    resetUrl: "https://aphrody.app/auth/reset-password?token=reset_2026_afe88912cd34",
+    resetUrl:
+      "https://aphrody.app/auth/reset-password?token=reset_2026_afe88912cd34",
     expiresInMinutes: 30,
     ipAddress: "51.77.147.152",
+  },
+  noreply: {
+    email: "contact@aphrody.com",
+    senderDomain: "aphrody.app",
+    category: "SYSTEM_SYNC",
+    title: "WireGuard Mesh Tunnel Synchronized",
+    summary: "Consensus state across edge nodes verified successfully.",
+    details: [
+      { label: "Mesh IP", value: "10.200.77.5" },
+      { label: "Quorum", value: "3/3 Nodes Active" },
+    ],
   },
 };
 
@@ -99,12 +123,20 @@ export function startMailStudioServer(port = 8799) {
 
       // Health
       if (url.pathname === "/health") {
-        return Response.json({ status: "ok", studio: "aphrody-mail-studio", port });
+        return Response.json({
+          status: "ok",
+          studio: "aphrody-mail-studio",
+          port,
+        });
       }
 
       // API: Preview
       if (url.pathname === "/api/preview" && req.method === "POST") {
-        const body = (await req.json()) as { template: EmailTemplateName; theme?: "light" | "dark"; recipient?: string };
+        const body = (await req.json()) as {
+          template: EmailTemplateName;
+          theme?: "light" | "dark";
+          recipient?: string;
+        };
         const data = {
           ...sampleData[body.template],
           email: body.recipient || "contact@aphrody.com",
@@ -117,7 +149,10 @@ export function startMailStudioServer(port = 8799) {
         let html = rendered.html;
         // If dark theme preview requested in iframe
         if (body.theme === "dark") {
-          html = html.replace("<head>", `<head><style>:root { color-scheme: dark !important; } body, .wrapper { background-color: #090D16 !important; color: #F1F5F9 !important; } .main-card { background-color: #0F172A !important; border-color: #1E293B !important; } .email-header { border-bottom-color: #1E293B !important; } .email-body { color: #CBD5E1 !important; } .email-footer { background-color: #0A0F1D !important; border-top-color: #1E293B !important; color: #94A3B8 !important; }</style>`);
+          html = html.replace(
+            "<head>",
+            `<head><style>:root { color-scheme: dark !important; } body, .wrapper { background-color: #090D16 !important; color: #F1F5F9 !important; } .main-card { background-color: #0F172A !important; border-color: #1E293B !important; } .email-header { border-bottom-color: #1E293B !important; } .email-body { color: #CBD5E1 !important; } .email-footer { background-color: #0A0F1D !important; border-top-color: #1E293B !important; color: #94A3B8 !important; }</style>`,
+          );
         }
 
         return Response.json({
@@ -157,7 +192,7 @@ export function startMailStudioServer(port = 8799) {
               success: false,
               error: err.message,
             },
-            { status: 500 }
+            { status: 500 },
           );
         }
       }
@@ -166,7 +201,9 @@ export function startMailStudioServer(port = 8799) {
     },
   });
 
-  console.log(`Aphrody Mail Studio GUI listening on http://localhost:${server.port}`);
+  console.log(
+    `Aphrody Mail Studio GUI listening on http://localhost:${server.port}`,
+  );
   return server;
 }
 

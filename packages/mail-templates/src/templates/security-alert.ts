@@ -9,9 +9,14 @@ export interface SecurityAlertTemplateProps {
   revokeUrl?: string;
 }
 
-export function renderSecurityAlertEmail(props: SecurityAlertTemplateProps): { html: string; text: string; subject: string } {
+export function renderSecurityAlertEmail(props: SecurityAlertTemplateProps): {
+  html: string;
+  text: string;
+  subject: string;
+} {
   const subject = "Security Alert: New Sign-in to your Aphrody account";
-  const revokeUrl = props.revokeUrl || "https://aphrody.app/account/sessions?action=revoke_all";
+  const revokeUrl =
+    props.revokeUrl || "https://aphrody.app/account/sessions?action=revoke_all";
   const time = props.timestamp || new Date().toUTCString();
 
   const contentHtml = `
@@ -66,7 +71,10 @@ export function renderSecurityAlertEmail(props: SecurityAlertTemplateProps): { h
     },
     secondaryLinks: [
       { label: "Change Password", url: "https://aphrody.app/account/password" },
-      { label: "Security Activity Log", url: "https://aphrody.app/account/audit" },
+      {
+        label: "Security Activity Log",
+        url: "https://aphrody.app/account/audit",
+      },
     ],
     recipientEmail: props.email,
   });

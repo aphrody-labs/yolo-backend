@@ -86,7 +86,9 @@ export class ResendEngine {
     },
 
     batch: {
-      send: async (emails: CreateEmailOptions[]): Promise<BatchEmailResponse> => {
+      send: async (
+        emails: CreateEmailOptions[],
+      ): Promise<BatchEmailResponse> => {
         const results: Array<{ id: string }> = [];
         for (const email of emails) {
           const res = await this.emails.send(email);
@@ -109,7 +111,11 @@ export class ResendEngine {
   /**
    * Webhook Signature Verifier (svix compatible)
    */
-  async verifyWebhookSignature(payload: string, headers: Record<string, string>, secret: string): Promise<boolean> {
+  async verifyWebhookSignature(
+    payload: string,
+    headers: Record<string, string>,
+    secret: string,
+  ): Promise<boolean> {
     const signature = headers["svix-signature"] || headers["webhook-signature"];
     const timestamp = headers["svix-timestamp"] || headers["webhook-timestamp"];
 
@@ -126,10 +132,14 @@ export class ResendEngine {
       new TextEncoder().encode(secret),
       { name: "HMAC", hash: "SHA-256" },
       false,
-      ["sign"]
+      ["sign"],
     );
 
-    const sigBuf = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(toSign));
+    const sigBuf = await crypto.subtle.sign(
+      "HMAC",
+      key,
+      new TextEncoder().encode(toSign),
+    );
     const computed = Buffer.from(sigBuf).toString("base64");
 
     return signature.includes(computed);

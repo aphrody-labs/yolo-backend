@@ -13,7 +13,10 @@ if (!existsSync("dist")) {
   mkdirSync("dist", { recursive: true });
 }
 
-const outfile = resolve("dist", process.platform === "win32" ? "yolo-backend.exe" : "yolo-backend");
+const outfile = resolve(
+  "dist",
+  process.platform === "win32" ? "yolo-backend.exe" : "yolo-backend",
+);
 
 const start = performance.now();
 

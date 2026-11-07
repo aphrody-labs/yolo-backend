@@ -16,7 +16,9 @@ export interface OAuthProviderConfig {
   extraParams?: Record<string, string>;
 }
 
-export function getProviderTemplates(env = process.env): Record<string, OAuthProviderConfig> {
+export function getProviderTemplates(
+  env = process.env,
+): Record<string, OAuthProviderConfig> {
   const authDomain = env.BETTER_AUTH_URL || "https://auth.aphrody.app";
 
   return {
@@ -24,7 +26,9 @@ export function getProviderTemplates(env = process.env): Record<string, OAuthPro
     google: {
       id: "google",
       name: "Google Cloud & Workspace",
-      clientId: env.GOOGLE_CLIENT_ID || "aphrody-google-client-id.apps.googleusercontent.com",
+      clientId:
+        env.GOOGLE_CLIENT_ID ||
+        "aphrody-google-client-id.apps.googleusercontent.com",
       clientSecret: env.GOOGLE_CLIENT_SECRET || "",
       authorizationUrl: "https://accounts.google.com/o/oauth2/v2/auth",
       tokenUrl: "https://oauth2.googleapis.com/token",
@@ -54,7 +58,8 @@ export function getProviderTemplates(env = process.env): Record<string, OAuthPro
     cloudflare: {
       id: "cloudflare",
       name: "Cloudflare Access",
-      clientId: env.CLOUDFLARE_OAUTH_CLIENT_ID || "ca22c1a51a145f919b54afa18d936516",
+      clientId:
+        env.CLOUDFLARE_OAUTH_CLIENT_ID || "ca22c1a51a145f919b54afa18d936516",
       clientSecret: env.CLOUDFLARE_OAUTH_CLIENT_SECRET || "",
       authorizationUrl: "https://dash.cloudflare.com/oauth2/auth",
       tokenUrl: "https://dash.cloudflare.com/oauth2/token",
@@ -85,7 +90,8 @@ export function getProviderTemplates(env = process.env): Record<string, OAuthPro
       name: "Microsoft Entra ID",
       clientId: env.MICROSOFT_CLIENT_ID || "",
       clientSecret: env.MICROSOFT_CLIENT_SECRET || "",
-      authorizationUrl: "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
+      authorizationUrl:
+        "https://login.microsoftonline.com/common/oauth2/v2.0/authorize",
       tokenUrl: "https://login.microsoftonline.com/common/oauth2/v2.0/token",
       userInfoUrl: "https://graph.microsoft.com/v1.0/me",
       scopes: ["openid", "profile", "email", "User.Read"],
@@ -120,7 +126,11 @@ export function getProviderTemplates(env = process.env): Record<string, OAuthPro
   };
 }
 
-export function buildAuthorizationUrl(provider: OAuthProviderConfig, state: string, codeChallenge?: string): string {
+export function buildAuthorizationUrl(
+  provider: OAuthProviderConfig,
+  state: string,
+  codeChallenge?: string,
+): string {
   const url = new URL(provider.authorizationUrl);
   url.searchParams.set("client_id", provider.clientId);
   url.searchParams.set("redirect_uri", provider.redirectUri || "");

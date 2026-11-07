@@ -6,7 +6,11 @@ export interface TwoFactorTemplateProps {
   expiresInMinutes?: number;
 }
 
-export function renderTwoFactorEmail(props: TwoFactorTemplateProps): { html: string; text: string; subject: string } {
+export function renderTwoFactorEmail(props: TwoFactorTemplateProps): {
+  html: string;
+  text: string;
+  subject: string;
+} {
   const subject = `${props.code} is your Aphrody verification code`;
   const ttl = props.expiresInMinutes || 10;
 

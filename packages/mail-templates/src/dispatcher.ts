@@ -59,12 +59,20 @@ export class MailDispatcher {
     defaultFromName?: string;
   }) {
     this.resendApiKey = config?.resendApiKey || process.env.RESEND_API_KEY;
-    this.gmailUser = config?.gmailUser || process.env.GMAIL_USER || "contact@aphrody.com";
-    this.gmailAppPassword = config?.gmailAppPassword || process.env.GMAIL_APP_PASSWORD;
+    this.gmailUser =
+      config?.gmailUser || process.env.GMAIL_USER || "contact@aphrody.com";
+    this.gmailAppPassword =
+      config?.gmailAppPassword || process.env.GMAIL_APP_PASSWORD;
     this.vpsMeshEndpoint =
-      config?.vpsMeshEndpoint || process.env.VPS_MESH_ENDPOINT || "http://10.200.77.5:17080/api/mail/send";
-    this.vpsMeshAuthToken = config?.vpsMeshAuthToken || process.env.VPS_MESH_TOKEN || "aphrody-mesh-auth-2026";
-    this.defaultFromEmail = config?.defaultFromEmail || "notifications@aphrody.app";
+      config?.vpsMeshEndpoint ||
+      process.env.VPS_MESH_ENDPOINT ||
+      "http://10.200.77.5:17080/api/mail/send";
+    this.vpsMeshAuthToken =
+      config?.vpsMeshAuthToken ||
+      process.env.VPS_MESH_TOKEN ||
+      "aphrody-mesh-auth-2026";
+    this.defaultFromEmail =
+      config?.defaultFromEmail || "notifications@aphrody.app";
     this.defaultFromName = config?.defaultFromName || "Aphrody Cloud OS";
   }
 
@@ -91,7 +99,8 @@ export class MailDispatcher {
     }
 
     if (!subject) throw new Error("Email subject is required");
-    if (!html && !text) throw new Error("Email content (html or text) is required");
+    if (!html && !text)
+      throw new Error("Email content (html or text) is required");
     if (!html) html = `<pre style="font-family: sans-serif;">${text}</pre>`;
     if (!text) text = html.replace(/<[^>]+>/g, " ").trim();
 
@@ -128,7 +137,11 @@ export class MailDispatcher {
         const resLatency = Math.round(performance.now() - resendStart);
         if (res.ok) {
           const data = (await res.json()) as { id: string };
-          attempts.push({ provider: "resend", success: true, latencyMs: resLatency });
+          attempts.push({
+            provider: "resend",
+            success: true,
+            latencyMs: resLatency,
+          });
           return {
             success: true,
             messageId: data.id || `resend_${Date.now()}`,
@@ -159,7 +172,10 @@ export class MailDispatcher {
     }
 
     // Provider 2: Gmail SMTP Direct or API
-    if (preferredProvider === "gmail" || (preferredProvider === "auto" && attempts.length > 0)) {
+    if (
+      preferredProvider === "gmail" ||
+      (preferredProvider === "auto" && attempts.length > 0)
+    ) {
       const gmailStart = performance.now();
       try {
         if (!this.gmailAppPassword) {
@@ -176,7 +192,11 @@ export class MailDispatcher {
         });
 
         const gmailLatency = Math.round(performance.now() - gmailStart);
-        attempts.push({ provider: "gmail", success: true, latencyMs: gmailLatency });
+        attempts.push({
+          provider: "gmail",
+          success: true,
+          latencyMs: gmailLatency,
+        });
         return {
           success: true,
           messageId: res.messageId,
@@ -221,7 +241,11 @@ export class MailDispatcher {
       const vpsLatency = Math.round(performance.now() - vpsStart);
       if (vpsRes.ok) {
         const vpsData = (await vpsRes.json()) as { messageId: string };
-        attempts.push({ provider: "vps-mesh", success: true, latencyMs: vpsLatency });
+        attempts.push({
+          provider: "vps-mesh",
+          success: true,
+          latencyMs: vpsLatency,
+        });
         return {
           success: true,
           messageId: vpsData.messageId || `vps_${Date.now()}`,
@@ -253,7 +277,12 @@ export class MailDispatcher {
     // If all providers failed, throw exhaustive error with receipt
     throw new Error(
       `All email providers failed to dispatch email to [${recipients.join(", ")}]:\n` +
-        attempts.map((a) => ` - [${a.provider}] (${a.latencyMs}ms): ${a.error || "Unknown error"}`).join("\n")
+        attempts
+          .map(
+            (a) =>
+              ` - [${a.provider}] (${a.latencyMs}ms): ${a.error || "Unknown error"}`,
+          )
+          .join("\n"),
     );
   }
 
@@ -268,6 +297,7 @@ export class MailDispatcher {
     html: string;
     text: string;
   }): Promise<{ messageId: string }> {
+    const gmailPassword = this.gmailAppPassword;
     return new Promise((resolve, reject) => {
       const boundary = `----=_Part_${Date.now()}_${Math.random().toString(36).substring(2)}`;
       const messageId = `<${Date.now()}.${Math.random().toString(36).substring(2)}@aphrody.app>`;
@@ -326,7 +356,9 @@ export class MailDispatcher {
                 sock.write(`${userBase64}\r\n`);
                 step = 3;
               } else if (step === 3 && code === 334) {
-                const passBase64 = Buffer.from(this.gmailAppPassword!).toString("base64");
+                const passBase64 = Buffer.from(gmailPassword || "").toString(
+                  "base64",
+                );
                 sock.write(`${passBase64}\r\n`);
                 step = 4;
               } else if (step === 4 && code === 235) {
@@ -355,7 +387,12 @@ export class MailDispatcher {
             reject(err);
           },
           close() {
-            if (step < 8) reject(new Error("SMTP connection closed unexpectedly before completion"));
+            if (step < 8)
+              reject(
+                new Error(
+                  "SMTP connection closed unexpectedly before completion",
+                ),
+              );
           },
         },
       });

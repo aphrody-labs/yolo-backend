@@ -14,9 +14,17 @@ export interface SystemAlertTemplateProps {
   details: string;
 }
 
-export function renderSystemAlertEmail(props: SystemAlertTemplateProps): { html: string; text: string; subject: string } {
+export function renderSystemAlertEmail(props: SystemAlertTemplateProps): {
+  html: string;
+  text: string;
+  subject: string;
+} {
   const isOk = props.status === "RESOLVED";
-  const badgeVariant = isOk ? "success" : props.status === "CRITICAL" ? "danger" : "warning";
+  const badgeVariant = isOk
+    ? "success"
+    : props.status === "CRITICAL"
+      ? "danger"
+      : "warning";
   const subject = `[${props.status}] Aphrody Mesh Gateway: ${props.clusterEvent}`;
 
   const contentHtml = `

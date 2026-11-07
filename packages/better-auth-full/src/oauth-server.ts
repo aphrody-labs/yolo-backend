@@ -38,8 +38,12 @@ export class AphrodyOAuthServer {
   private jwtSecret: string;
 
   constructor(config?: OAuthServerConfig) {
-    this.issuer = config?.issuer || process.env.OAUTH_ISSUER || "https://auth.aphrody.app";
-    this.jwtSecret = config?.jwtSecret || process.env.BETTER_AUTH_SECRET || "aphrody-oauth-secret-key-32-chars-2026!!";
+    this.issuer =
+      config?.issuer || process.env.OAUTH_ISSUER || "https://auth.aphrody.app";
+    this.jwtSecret =
+      config?.jwtSecret ||
+      process.env.BETTER_AUTH_SECRET ||
+      "aphrody-oauth-secret-key-32-chars-2026!!";
     this.db = config?.database || new Database(":memory:");
   }
 
@@ -54,14 +58,39 @@ export class AphrodyOAuthServer {
       userinfo_endpoint: `${this.issuer}/oauth/userinfo`,
       jwks_uri: `${this.issuer}/.well-known/jwks.json`,
       registration_endpoint: `${this.issuer}/oauth/register`,
-      scopes_supported: ["openid", "profile", "email", "offline_access", "admin", "mesh:control"],
+      scopes_supported: [
+        "openid",
+        "profile",
+        "email",
+        "offline_access",
+        "admin",
+        "mesh:control",
+      ],
       response_types_supported: ["code", "token", "id_token"],
-      grant_types_supported: ["authorization_code", "refresh_token", "client_credentials"],
+      grant_types_supported: [
+        "authorization_code",
+        "refresh_token",
+        "client_credentials",
+      ],
       subject_types_supported: ["public"],
       id_token_signing_alg_values_supported: ["HS256", "RS256"],
-      token_endpoint_auth_methods_supported: ["client_secret_basic", "client_secret_post", "none"],
+      token_endpoint_auth_methods_supported: [
+        "client_secret_basic",
+        "client_secret_post",
+        "none",
+      ],
       code_challenge_methods_supported: ["S256", "plain"],
-      claims_supported: ["sub", "iss", "aud", "exp", "iat", "name", "email", "role", "plan"],
+      claims_supported: [
+        "sub",
+        "iss",
+        "aud",
+        "exp",
+        "iat",
+        "name",
+        "email",
+        "role",
+        "plan",
+      ],
     };
   }
 
@@ -95,7 +124,9 @@ export class AphrodyOAuthServer {
     userId: string;
   }): Promise<{ code: string; redirectUrl: string }> {
     if (params.responseType !== "code") {
-      throw new Error(`Unsupported response_type: ${params.responseType}. Expected 'code'.`);
+      throw new Error(
+        `Unsupported response_type: ${params.responseType}. Expected 'code'.`,
+      );
     }
 
     const code = `authcode_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
@@ -189,9 +220,15 @@ export class AphrodyOAuthServer {
     // Verify PKCE if present
     if (record.codeChallenge) {
       if (!params.codeVerifier) {
-        throw new Error("code_verifier required for PKCE-protected authorization code");
+        throw new Error(
+          "code_verifier required for PKCE-protected authorization code",
+        );
       }
-      const valid = await this.verifyPkce(params.codeVerifier, record.codeChallenge, record.codeChallengeMethod);
+      const valid = await this.verifyPkce(
+        params.codeVerifier,
+        record.codeChallenge,
+        record.codeChallengeMethod,
+      );
       if (!valid) {
         throw new Error("Invalid code_verifier");
       }
@@ -263,7 +300,9 @@ export class AphrodyOAuthServer {
     };
   }
 
-  private async exchangeRefreshToken(params: { refreshToken?: string }): Promise<OAuthTokenResponse> {
+  private async exchangeRefreshToken(params: {
+    refreshToken?: string;
+  }): Promise<OAuthTokenResponse> {
     if (!params.refreshToken) throw new Error("Missing refresh_token");
 
     const expiresIn = 3600;
@@ -289,10 +328,13 @@ export class AphrodyOAuthServer {
     };
   }
 
-  async verifyAccessToken(token: string): Promise<{ valid: boolean; payload?: any; error?: string }> {
+  async verifyAccessToken(
+    token: string,
+  ): Promise<{ valid: boolean; payload?: any; error?: string }> {
     try {
       const parts = token.split(".");
-      if (parts.length !== 3) return { valid: false, error: "Invalid token structure" };
+      if (parts.length !== 3)
+        return { valid: false, error: "Invalid token structure" };
 
       const message = `${parts[0]}.${parts[1]}`;
       const signature = parts[2];
@@ -302,19 +344,21 @@ export class AphrodyOAuthServer {
         new TextEncoder().encode(this.jwtSecret),
         { name: "HMAC", hash: "SHA-256" },
         false,
-        ["verify"]
+        ["verify"],
       );
 
       const isValid = await crypto.subtle.verify(
         "HMAC",
         key,
         Buffer.from(signature, "base64url"),
-        new TextEncoder().encode(message)
+        new TextEncoder().encode(message),
       );
 
       if (!isValid) return { valid: false, error: "Invalid signature" };
 
-      const payload = JSON.parse(Buffer.from(parts[1], "base64url").toString("utf8"));
+      const payload = JSON.parse(
+        Buffer.from(parts[1], "base64url").toString("utf8"),
+      );
       if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
         return { valid: false, error: "Token expired" };
       }
@@ -328,7 +372,9 @@ export class AphrodyOAuthServer {
   private async signJwtHs256(payload: any, secret: string): Promise<string> {
     const header = { alg: "HS256", typ: "JWT", kid: "aphrody-auth-key-2026" };
     const encHeader = Buffer.from(JSON.stringify(header)).toString("base64url");
-    const encPayload = Buffer.from(JSON.stringify(payload)).toString("base64url");
+    const encPayload = Buffer.from(JSON.stringify(payload)).toString(
+      "base64url",
+    );
     const message = `${encHeader}.${encPayload}`;
 
     const key = await crypto.subtle.importKey(
@@ -336,21 +382,32 @@ export class AphrodyOAuthServer {
       new TextEncoder().encode(secret),
       { name: "HMAC", hash: "SHA-256" },
       false,
-      ["sign"]
+      ["sign"],
     );
 
-    const signature = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(message));
+    const signature = await crypto.subtle.sign(
+      "HMAC",
+      key,
+      new TextEncoder().encode(message),
+    );
     const encSig = Buffer.from(signature).toString("base64url");
 
     return `${message}.${encSig}`;
   }
 
-  private async verifyPkce(verifier: string, challenge: string, method = "S256"): Promise<boolean> {
+  private async verifyPkce(
+    verifier: string,
+    challenge: string,
+    method = "S256",
+  ): Promise<boolean> {
     if (method === "plain") {
       return verifier === challenge;
     }
     // S256: BASE64URL-ENCODE(SHA256(ASCII(code_verifier)))
-    const hash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(verifier));
+    const hash = await crypto.subtle.digest(
+      "SHA-256",
+      new TextEncoder().encode(verifier),
+    );
     const calculatedChallenge = Buffer.from(hash).toString("base64url");
     return calculatedChallenge === challenge;
   }

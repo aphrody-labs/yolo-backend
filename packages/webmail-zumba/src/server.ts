@@ -23,7 +23,11 @@ export function startZumbaServer(port = 8798) {
       }
 
       if (url.pathname === "/health") {
-        return Response.json({ status: "healthy", service: "zumba-webmail", port });
+        return Response.json({
+          status: "healthy",
+          service: "zumba-webmail",
+          port,
+        });
       }
 
       return new Response("Not Found", { status: 404 });

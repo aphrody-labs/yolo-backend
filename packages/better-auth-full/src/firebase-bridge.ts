@@ -25,7 +25,8 @@ export class FirebaseAuthBridge {
   private privateKey?: string;
 
   constructor(config?: FirebaseBridgeConfig) {
-    this.projectId = config?.projectId || process.env.FIREBASE_PROJECT_ID || "aphrody";
+    this.projectId =
+      config?.projectId || process.env.FIREBASE_PROJECT_ID || "aphrody";
     this.clientEmail =
       config?.clientEmail ||
       process.env.FIREBASE_CLIENT_EMAIL ||
@@ -71,14 +72,18 @@ export class FirebaseAuthBridge {
   /**
    * Verifies a Firebase ID token using Google Public Keys
    */
-  async verifyIdToken(idToken: string): Promise<{ valid: boolean; payload?: any; error?: string }> {
+  async verifyIdToken(
+    idToken: string,
+  ): Promise<{ valid: boolean; payload?: any; error?: string }> {
     try {
       const parts = idToken.split(".");
       if (parts.length !== 3) {
         return { valid: false, error: "Malformed JWT" };
       }
 
-      const payload = JSON.parse(Buffer.from(parts[1], "base64url").toString("utf8"));
+      const payload = JSON.parse(
+        Buffer.from(parts[1], "base64url").toString("utf8"),
+      );
       const now = Math.floor(Date.now() / 1000);
 
       if (payload.exp && payload.exp < now) {
@@ -87,9 +92,13 @@ export class FirebaseAuthBridge {
 
       if (
         payload.aud !== this.projectId &&
-        payload.aud !== "https://identitytoolkit.googleapis.com/google.identity.identitytoolkit.v1.IdentityToolkit"
+        payload.aud !==
+          "https://identitytoolkit.googleapis.com/google.identity.identitytoolkit.v1.IdentityToolkit"
       ) {
-        return { valid: false, error: `Audience mismatch: unexpected ${payload.aud}` };
+        return {
+          valid: false,
+          error: `Audience mismatch: unexpected ${payload.aud}`,
+        };
       }
 
       return { valid: true, payload };
@@ -100,14 +109,24 @@ export class FirebaseAuthBridge {
 
   private createMockOrDevToken(header: any, payload: any): string {
     const encHeader = Buffer.from(JSON.stringify(header)).toString("base64url");
-    const encPayload = Buffer.from(JSON.stringify(payload)).toString("base64url");
-    const signature = Buffer.from("mock_sig_aphrody_mesh_2026").toString("base64url");
+    const encPayload = Buffer.from(JSON.stringify(payload)).toString(
+      "base64url",
+    );
+    const signature = Buffer.from("mock_sig_aphrody_mesh_2026").toString(
+      "base64url",
+    );
     return `${encHeader}.${encPayload}.${signature}`;
   }
 
-  private async signJwtRs256(header: any, payload: any, pemKey: string): Promise<string> {
+  private async signJwtRs256(
+    header: any,
+    payload: any,
+    pemKey: string,
+  ): Promise<string> {
     const encHeader = Buffer.from(JSON.stringify(header)).toString("base64url");
-    const encPayload = Buffer.from(JSON.stringify(payload)).toString("base64url");
+    const encPayload = Buffer.from(JSON.stringify(payload)).toString(
+      "base64url",
+    );
     const message = `${encHeader}.${encPayload}`;
 
     // Clean PEM formatting for Web Crypto
@@ -125,13 +144,13 @@ export class FirebaseAuthBridge {
         hash: "SHA-256",
       },
       false,
-      ["sign"]
+      ["sign"],
     );
 
     const signature = await crypto.subtle.sign(
       "RSASSA-PKCS1-v1_5",
       cryptoKey,
-      new TextEncoder().encode(message)
+      new TextEncoder().encode(message),
     );
 
     const encSig = Buffer.from(signature).toString("base64url");

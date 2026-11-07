@@ -58,31 +58,37 @@ bun run src/index.ts
 ## 3. Subsystem Overview
 
 ### 3.1 Resend Engine (`@yolo-rs/resend-engine`)
+
 - Drop-in replacement for `@resend/node` and Resend REST API.
 - Implements `emails.send()`, `emails.batch.send()`, `emails.get()`.
 - Built-in Svix-compatible webhook signature verifier (`svix-signature`, `svix-timestamp`).
 
 ### 3.2 Cloudflare Mail (`@yolo-rs/cloudflare-mail`)
+
 - Manages Cloudflare Email Routing on zone `aphrody.app` (`f4dab237b9811435da6fee0b5b3438d4`).
 - Cloudflare Edge Email Worker factory logging to Cloudflare D1 `aphrody-app`.
 - DNS MX, SPF, DKIM, and DMARC verification.
 
 ### 3.3 Hostinger Mail (`@yolo-rs/hostinger-mail`)
+
 - Manages Hostinger Mail API and mailboxes.
 - Integrates with Hostinger KVM 8 bare-metal instance `2116886` (`72.60.186.43` / Arch Linux).
 
 ### 3.4 Zumba Webmail (`@yolo-rs/webmail-zumba`)
+
 - High-performance, modern Webmail client replacing legacy OVH Roundcube and Zimbra.
 - Interactive Single-Page App in TSX with folder trees (Inbox, Sent, Drafts, Archive, Trash).
 - Message reader with DKIM/SPF verification badges and rich compose modal.
 
 ### 3.5 Better-Auth Full Suite (`@yolo-rs/better-auth-full`)
+
 - Complete Better-Auth integration with 10 plugins (`magicLink`, `twoFactor`, `organization`, `admin`, `bearer`, `emailOTP`, `captcha` Turnstile, `jwt`, `openAPI`, `username`).
 - Autonomous OAuth 2.0 / OpenID Connect (OIDC) Server with discovery (`/.well-known/openid-configuration`), JWKS, and PKCE (`S256`).
 - Pre-configured provider templates for Google Workspace, GitHub, Cloudflare Access, Apple ID, Microsoft Entra ID, Discord, and Aphrody Mesh Native.
 - Zero-dependency Client SDK & Hono/Bun middleware (`AphrodyAuthClient`).
 
 ### 3.6 Google Workspace (`@yolo-rs/google-workspace`)
+
 - Service Account JWT generation for Google Cloud Platform.
 - RFC 5322 MIME message formatting and Gmail API client.
 

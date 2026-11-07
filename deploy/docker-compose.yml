@@ -1,0 +1,56 @@
+services:
+  yolo-backend:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    container_name: aphrody-yolo-backend
+    restart: always
+    ports:
+      - "8795:8795"
+      - "8796:8796"
+    environment:
+      - NODE_ENV=production
+      - PORT=8795
+      - RUST_PORT=8796
+      - DATABASE_URL=postgresql://aphrody:aphrody_secret_pass_2026@postgres:5432/aphrody_identity
+      - REDIS_URL=redis://redis:6379
+      - BETTER_AUTH_URL=https://auth.aphrody.app
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - aphrody-mesh
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: aphrody-identity-db
+    restart: always
+    environment:
+      POSTGRES_USER: aphrody
+      POSTGRES_PASSWORD: aphrody_secret_pass_2026
+      POSTGRES_DB: aphrody_identity
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - aphrody-mesh
+
+  redis:
+    image: redis:7-alpine
+    container_name: aphrody-identity-cache
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    networks:
+      - aphrody-mesh
+
+volumes:
+  pgdata:
+  redisdata:
+
+networks:
+  aphrody-mesh:
+    driver: bridge

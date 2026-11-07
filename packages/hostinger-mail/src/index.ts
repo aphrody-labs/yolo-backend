@@ -50,9 +50,12 @@ export class HostingerMailClient {
     }
 
     try {
-      const res = await fetch(`${this.endpoint}/mail/orders/${orderId}/mailboxes`, {
-        headers: this.headers(),
-      });
+      const res = await fetch(
+        `${this.endpoint}/mail/orders/${orderId}/mailboxes`,
+        {
+          headers: this.headers(),
+        },
+      );
       if (!res.ok) return [];
       const data = (await res.json()) as any;
       return (data.data || []).map((m: any) => ({

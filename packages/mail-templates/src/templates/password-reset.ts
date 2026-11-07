@@ -7,7 +7,11 @@ export interface PasswordResetTemplateProps {
   ipAddress?: string;
 }
 
-export function renderPasswordResetEmail(props: PasswordResetTemplateProps): { html: string; text: string; subject: string } {
+export function renderPasswordResetEmail(props: PasswordResetTemplateProps): {
+  html: string;
+  text: string;
+  subject: string;
+} {
   const subject = "Reset your Aphrody password";
   const ttl = props.expiresInMinutes || 30;
 

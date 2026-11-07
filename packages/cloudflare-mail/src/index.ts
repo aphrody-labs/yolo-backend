@@ -45,9 +45,12 @@ export class CloudflareMailClient {
    * Checks Email Routing status
    */
   async getRoutingStatus(): Promise<{ enabled: boolean; status: string }> {
-    const res = await fetch(`https://api.cloudflare.com/client/v4/zones/${this.zoneId}/email/routing`, {
-      headers: this.headers(),
-    });
+    const res = await fetch(
+      `https://api.cloudflare.com/client/v4/zones/${this.zoneId}/email/routing`,
+      {
+        headers: this.headers(),
+      },
+    );
     if (!res.ok) return { enabled: false, status: `error_${res.status}` };
     const data = (await res.json()) as any;
     return {
@@ -59,10 +62,15 @@ export class CloudflareMailClient {
   /**
    * Retrieves required and current DNS records
    */
-  async getRequiredDns(): Promise<Array<{ type: string; name: string; content: string; priority?: number }>> {
-    const res = await fetch(`https://api.cloudflare.com/client/v4/zones/${this.zoneId}/email/routing/dns`, {
-      headers: this.headers(),
-    });
+  async getRequiredDns(): Promise<
+    Array<{ type: string; name: string; content: string; priority?: number }>
+  > {
+    const res = await fetch(
+      `https://api.cloudflare.com/client/v4/zones/${this.zoneId}/email/routing/dns`,
+      {
+        headers: this.headers(),
+      },
+    );
     if (!res.ok) return [];
     const data = (await res.json()) as any;
     return data.result || [];
@@ -72,9 +80,12 @@ export class CloudflareMailClient {
    * Lists active Routing Rules
    */
   async listRoutingRules(): Promise<any[]> {
-    const res = await fetch(`https://api.cloudflare.com/client/v4/zones/${this.zoneId}/email/routing/rules`, {
-      headers: this.headers(),
-    });
+    const res = await fetch(
+      `https://api.cloudflare.com/client/v4/zones/${this.zoneId}/email/routing/rules`,
+      {
+        headers: this.headers(),
+      },
+    );
     if (!res.ok) return [];
     const data = (await res.json()) as any;
     return data.result || [];
@@ -96,9 +107,20 @@ export class CloudflareMailClient {
         if (env.DB) {
           try {
             await env.DB.prepare(
-              "INSERT INTO inbound_emails (id, messageId, fromAddress, toAddress, subject, spfStatus, dkimStatus, rawHeaders, bodySnippet, receivedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+              "INSERT INTO inbound_emails (id, messageId, fromAddress, toAddress, subject, spfStatus, dkimStatus, rawHeaders, bodySnippet, receivedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             )
-              .bind(id, messageId, from, to, subject, "pass", "pass", "", "", Date.now())
+              .bind(
+                id,
+                messageId,
+                from,
+                to,
+                subject,
+                "pass",
+                "pass",
+                "",
+                "",
+                Date.now(),
+              )
               .run();
           } catch {}
         }

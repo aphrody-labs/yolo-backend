@@ -1,12 +1,14 @@
 # YOLO-Backend Agent Governance & Architecture Directives
 
 ## 0. Doctrine Fondatrice : No Human In The Loop (NHITL)
+
 - **Zero Human In The Loop** : execution de bout en bout sans interruption, sans validation intermediaire, sans questions triviales.
 - **Grind Continu & Auto-Goal** : identification autonome des objectifs, resolution des bugs, auto-tests et commits automatiques.
 - **Purete Technique** : 100% Upstream Bun v1.4.4+ et Rust 2024. Bannissement strict de Node.js, npm, yarn, pnpm et des wrappers externes.
 - **Zero Emoji** : aucun emoji dans les reponses, fichiers, messages de commit ou logs.
 
 ## 1. Architecture du Monorepo
+
 1. **Bun AoT Host Engine** :
    - Entrypoint : `src/index.ts`.
    - Build AoT : `bun run scripts/compile-aot.ts` produisant `dist/yolo-backend.exe` (148.91 MB) via le compilateur Cranelift natif.
@@ -25,6 +27,7 @@
    - `packages/mail-templates` : 8 templates responsive 2026, marque Aphrody (SIREN 918 827 892, SVG vectoriel).
 
 ## 2. Main-Only Workflow
+
 - Tout commit s'effectue directement sur `main`.
 - Les hooks `pre-push` et `post-commit` installes via `bun scripts/main-only.ts` verrouillent les branches et poussent en temps reel.
 - Toujours executer `bun test` et `cargo check` avant de conclure.

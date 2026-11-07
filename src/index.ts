@@ -19,6 +19,9 @@ import { HostingerMailClient } from "../packages/hostinger-mail/src/index.js";
 import { ZumbaWebmailEngine } from "../packages/webmail-zumba/src/index.js";
 import { AphrodyOAuthServer } from "../packages/better-auth-full/src/oauth-server.js";
 import { AphrodyAuthClient } from "../packages/better-auth-full/src/client-sdk.js";
+import { AuthUiRenderer } from "../packages/better-auth-full/src/ui/index.js";
+import { IdentityDatabase } from "../packages/better-auth-full/src/db/adapter.js";
+import { PasswordVaultEngine } from "../packages/better-auth-full/src/vault/index.js";
 import { GoogleWorkspaceClient } from "../packages/google-workspace/src/index.js";
 import { MailDispatcher } from "../packages/mail-templates/src/dispatcher.js";
 
@@ -97,6 +100,80 @@ export function createUnifiedBackendApp() {
     });
   });
 
+  // Auth UI - Sign In / Sign Up
+  app.get("/auth/signin", (c) => {
+    const theme = (c.req.query("theme") || "aphrody") as any;
+    const product = (c.req.query("product") || "aphrody") as any;
+    const html = AuthUiRenderer.renderAuthPage("signin", theme, { product });
+    return c.html(html);
+  });
+
+  app.get("/auth/signup", (c) => {
+    const theme = (c.req.query("theme") || "aphrody") as any;
+    const product = (c.req.query("product") || "aphrody") as any;
+    const html = AuthUiRenderer.renderAuthPage("signup", theme, { product });
+    return c.html(html);
+  });
+
+  // Public Profile View
+  app.get("/profile/:username", async (c) => {
+    const username = c.req.param("username");
+    const theme = (c.req.query("theme") || "aphrody") as any;
+    const db = new IdentityDatabase();
+    const user = (await db.findUserByEmail(`${username}@aphrody.com`)) || {
+      name: username.toUpperCase(),
+      username,
+      role: "user",
+      bio: "Aphrody & YOLO Sovereign Cloud Developer",
+      createdAt: new Date().toISOString(),
+    };
+    const html = AuthUiRenderer.renderPublicProfilePage(
+      user as any,
+      [
+        { providerId: "google", accountId: "goog_123" },
+        { providerId: "github", accountId: "gh_123" },
+        { providerId: "steam", accountId: "steam_76561198" },
+      ],
+      theme,
+    );
+    return c.html(html);
+  });
+
+  // Admin Dashboard
+  app.get("/admin", async (c) => {
+    const theme = (c.req.query("theme") || "aphrody") as any;
+    const html = AuthUiRenderer.renderAdminDashboard(
+      { totalUsers: 42, activeSessions: 8, totalAccounts: 110 },
+      theme,
+    );
+    return c.html(html);
+  });
+
+  // Zero-Knowledge Password Vault API
+  app.post("/api/auth/vault/encrypt", async (c) => {
+    try {
+      const { text, masterPassword } = await c.req.json();
+      if (!text || !masterPassword)
+        return c.json({ error: "Missing parameters" }, 400);
+      const encrypted = PasswordVaultEngine.encrypt(text, masterPassword);
+      return c.json(encrypted);
+    } catch (err: any) {
+      return c.json({ error: err.message }, 500);
+    }
+  });
+
+  app.post("/api/auth/vault/decrypt", async (c) => {
+    try {
+      const { payload, masterPassword } = await c.req.json();
+      if (!payload || !masterPassword)
+        return c.json({ error: "Missing parameters" }, 400);
+      const decrypted = PasswordVaultEngine.decrypt(payload, masterPassword);
+      return c.json({ plainText: decrypted });
+    } catch (err: any) {
+      return c.json({ error: err.message }, 500);
+    }
+  });
+
   return app;
 }
 
@@ -107,5 +184,7 @@ if (import.meta.main) {
     port,
     fetch: app.fetch,
   });
-  console.log(`Aphrody YOLO Unified Backend Server listening on http://localhost:${port}`);
+  console.log(
+    `Aphrody YOLO Unified Backend Server listening on http://localhost:${port}`,
+  );
 }

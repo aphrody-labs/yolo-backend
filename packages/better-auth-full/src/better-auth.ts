@@ -31,7 +31,10 @@ export interface CreateAphrodyAuthConfig {
 export function createAphrodyAuth(config?: CreateAphrodyAuthConfig) {
   const mail = config?.mailDispatcher || new MailDispatcher();
   const db = config?.database || new Database(":memory:");
-  const baseURL = config?.baseURL || process.env.BETTER_AUTH_URL || "https://auth.aphrody.app";
+  const baseURL =
+    config?.baseURL ||
+    process.env.BETTER_AUTH_URL ||
+    "https://auth.aphrody.app";
   const secret =
     config?.secret ||
     process.env.BETTER_AUTH_SECRET ||
