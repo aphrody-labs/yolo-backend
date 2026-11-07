@@ -22,6 +22,7 @@ import { AphrodyAuthClient } from "../packages/better-auth-full/src/client-sdk.j
 import { AuthUiRenderer } from "../packages/better-auth-full/src/ui/index.js";
 import { IdentityDatabase } from "../packages/better-auth-full/src/db/adapter.js";
 import { PasswordVaultEngine } from "../packages/better-auth-full/src/vault/index.js";
+import { ProviderRegistry } from "../packages/better-auth-full/src/providers/index.js";
 import { GoogleWorkspaceClient } from "../packages/google-workspace/src/index.js";
 import { MailDispatcher } from "../packages/mail-templates/src/dispatcher.js";
 
@@ -34,6 +35,7 @@ export function createUnifiedBackendApp() {
   const dispatcher = new MailDispatcher();
   const hostinger = new HostingerMailClient();
   const google = new GoogleWorkspaceClient();
+  const db = new IdentityDatabase();
 
   // Root Status & Capability Discovery
   app.get("/", (c) => {
@@ -119,21 +121,12 @@ export function createUnifiedBackendApp() {
   app.get("/profile/:username", async (c) => {
     const username = c.req.param("username");
     const theme = (c.req.query("theme") || "aphrody") as any;
-    const db = new IdentityDatabase();
-    const user = (await db.findUserByEmail(`${username}@aphrody.com`)) || {
-      name: username.toUpperCase(),
-      username,
-      role: "user",
-      bio: "Aphrody & YOLO Sovereign Cloud Developer",
-      createdAt: new Date().toISOString(),
-    };
+    const user = await db.findUserByUsername(username);
+    if (!user) return c.html("<h1>404 profile not found</h1>", 404);
+    const accounts = await db.findAccountsByUserId(user.id);
     const html = AuthUiRenderer.renderPublicProfilePage(
       user as any,
-      [
-        { providerId: "google", accountId: "goog_123" },
-        { providerId: "github", accountId: "gh_123" },
-        { providerId: "steam", accountId: "steam_76561198" },
-      ],
+      accounts,
       theme,
     );
     return c.html(html);
@@ -143,10 +136,165 @@ export function createUnifiedBackendApp() {
   app.get("/admin", async (c) => {
     const theme = (c.req.query("theme") || "aphrody") as any;
     const html = AuthUiRenderer.renderAdminDashboard(
-      { totalUsers: 42, activeSessions: 8, totalAccounts: 110 },
+      await db.getStats(),
       theme,
     );
     return c.html(html);
+  });
+
+  // Provider Sign-In Redirector
+  app.get("/api/auth/signin/:provider", (c) => {
+    const providerId = c.req.param("provider");
+    const providers = ProviderRegistry.getProviders();
+    const target = (providers as any)[providerId];
+    if (!target) {
+      return c.json({ error: `Unsupported provider: ${providerId}` }, 400);
+    }
+    const state = crypto.randomUUID();
+    const authUrl = target.getAuthorizationUrl
+      ? target.getAuthorizationUrl(state)
+      : "/";
+    return c.redirect(authUrl);
+  });
+
+  // Magic Link Passwordless Sign-In
+  app.post("/api/auth/magic-link", async (c) => {
+    try {
+      let email = "";
+      const contentType = c.req.header("content-type") || "";
+      if (contentType.includes("application/json")) {
+        const body = await c.req.json();
+        email = body.email;
+      } else {
+        const body = await c.req.parseBody();
+        email = body.email as string;
+      }
+
+      if (!email || !email.includes("@")) {
+        return c.json({ error: "Invalid email address" }, 400);
+      }
+
+      await db.ensureReady();
+      let user = await db.findUserByEmail(email);
+      if (!user) {
+        user = await db.createUser({
+          id: `usr_${Date.now()}`,
+          email,
+          name: email.split("@")[0],
+          username: email
+            .split("@")[0]
+            .toLowerCase()
+            .replace(/[^a-z0-9]/g, ""),
+          emailVerified: false,
+          role: "user",
+          banned: false,
+        });
+      }
+
+      const token = crypto.randomUUID().replace(/-/g, "");
+      await db.createVerification(`magic:${email}`, token, 15 * 60 * 1000);
+      const origin = process.env.BETTER_AUTH_URL || new URL(c.req.url).origin;
+      const magicLinkUrl = `${origin}/api/auth/verify?token=${token}&email=${encodeURIComponent(email)}`;
+
+      // Dispatch real email via template engine
+      await dispatcher.send({
+        template: "magic-link",
+        from: { email: "auth@aphrody.app", name: "Aphrody Security" },
+        to: email,
+        templateData: {
+          name: user.name,
+          magicLinkUrl,
+          expiresInMinutes: 15,
+        },
+      });
+
+      await db.logAudit({
+        id: `aud_${Date.now()}`,
+        userId: user.id,
+        action: "magic_link_dispatched",
+        resource: email,
+        ipAddress: c.req.header("x-forwarded-for") || "127.0.0.1",
+        userAgent: c.req.header("user-agent"),
+        status: "success",
+      });
+
+      if (!contentType.includes("application/json")) {
+        return c.html(`
+          <!DOCTYPE html>
+          <html>
+          <body style="background:#09090b;color:#f4f4f5;font-family:sans-serif;display:flex;align-items:center;justify-content:center;height:100vh;">
+            <div style="background:#121217;border:1px solid #27272a;border-radius:16px;padding:36px;max-width:420px;text-align:center;">
+              <h2 style="color:#06b6d4;margin-bottom:12px;">Check your email</h2>
+              <p style="color:#a1a1aa;font-size:14px;line-height:1.5;">We dispatched a secure magic link to <strong>${email}</strong>. Click it to log in.</p>
+              <a href="/auth/signin" style="display:inline-block;margin-top:20px;color:#06b6d4;font-size:13px;text-decoration:none;">Back to Sign In</a>
+            </div>
+          </body>
+          </html>
+        `);
+      }
+
+      return c.json({
+        success: true,
+        email,
+        message: "Magic sign-in link dispatched",
+      });
+    } catch (err: any) {
+      return c.json({ error: err.message }, 500);
+    }
+  });
+
+  // Magic link verification: single-use, creates a real session
+  app.get("/api/auth/verify", async (c) => {
+    const token = c.req.query("token") || "";
+    const email = c.req.query("email") || "";
+    await db.ensureReady();
+    const ok = await db.consumeVerification(`magic:${email}`, token);
+    if (!ok) return c.json({ error: "Invalid or expired link" }, 400);
+    const user = await db.findUserByEmail(email);
+    if (!user) return c.json({ error: "Unknown user" }, 404);
+    await db.markEmailVerified(user.id);
+    const session = await db.createSession({
+      id: `ses_${crypto.randomUUID()}`,
+      userId: user.id,
+      token: crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, ""),
+      expiresAt: new Date(Date.now() + 30 * 86400000).toISOString(),
+      ipAddress: c.req.header("x-forwarded-for") || undefined,
+      userAgent: c.req.header("user-agent"),
+    });
+    c.header("Set-Cookie", `aphrody_session=${session.token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=2592000`);
+    return c.redirect("/auth/me");
+  });
+
+  // Session page (cookie or bearer)
+  app.get("/auth/me", async (c) => {
+    const cookie = (c.req.header("cookie") || "").match(/aphrody_session=([a-f0-9]+)/)?.[1];
+    await db.ensureReady();
+    const session = cookie ? await db.findSessionByToken(cookie) : null;
+    if (!session) return c.redirect("/auth/signin");
+    const user = await db.findUserById(session.userId);
+    return c.html(`<!DOCTYPE html><html><body style="font-family:sans-serif;background:#09090b;color:#f4f4f5;padding:40px"><h1 id="who">Signed in as ${user?.email}</h1><p id="verified">email_verified=${user?.emailVerified}</p><a href="/profile/${user?.username}">Public profile</a></body></html>`);
+  });
+
+  // Current User / Identity Context
+  app.get("/api/auth/me", async (c) => {
+    const authHeader = c.req.header("authorization") || "";
+    const token = authHeader.replace(/^Bearer\s+/i, "");
+    if (!token) return c.json({ authenticated: false }, 401);
+
+    await db.ensureReady();
+    const session = await db.findSessionByToken(token);
+    if (!session)
+      return c.json({ authenticated: false, error: "Invalid session" }, 401);
+
+    const user = await db.findUserById(session.userId);
+    const accounts = await db.findAccountsByUserId(session.userId);
+
+    return c.json({
+      authenticated: true,
+      user,
+      accounts,
+      session,
+    });
   });
 
   // Zero-Knowledge Password Vault API

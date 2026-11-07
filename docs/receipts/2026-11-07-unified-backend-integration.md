@@ -10,6 +10,7 @@
 ## 1. Resolved Issues
 
 ### `C:\src\yolo-backend`
+
 1. **`tsconfig.json` Typings Alignment**:
    - Replaced `"bun-types"` with `"@types/bun"` under `types`.
    - Tuned `noUnusedLocals` and `noUnusedParameters` to eliminate non-blocking unused warnings during monorepo cross-package evaluation.
@@ -23,6 +24,7 @@
    - `bun test`: 13 passed, 0 failed, 54 expect() assertions.
 
 ### `C:\src\yolo-cloudflare`
+
 1. **Mail Dispatcher Scope Bug**:
    - Scoped `gmailPassword` before `Bun.connect` callback in `src/mail/dispatcher.ts:329`.
 2. **Mail GUI Server Missing Property**:

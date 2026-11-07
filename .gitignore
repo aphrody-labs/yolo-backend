@@ -6,3 +6,5 @@ target/
 .env.local
 .DS_Store
 *.tmp
+
+data/

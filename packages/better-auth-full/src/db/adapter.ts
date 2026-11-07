@@ -58,7 +58,9 @@ export class IdentityDatabase {
 
     if (this.engine === "sqlite") {
       const path =
-        config.sqlitePath || process.env.SQLITE_DB_PATH || ":memory:";
+        config.sqlitePath ||
+        process.env.SQLITE_DB_PATH ||
+        "data/aphrody_identity.db";
       this.sqliteDb = new SqliteDatabase(path);
       this.sqliteDb.run("PRAGMA journal_mode = WAL;");
       this.sqliteDb.run("PRAGMA foreign_keys = ON;");
@@ -557,6 +559,115 @@ export class IdentityDatabase {
       INSERT INTO audit_logs (id, user_id, action, resource, ip_address, user_agent, status, details, created_at)
       VALUES (${log.id}, ${log.userId ?? null}, ${log.action}, ${log.resource}, ${log.ipAddress ?? null}, ${log.userAgent ?? null}, ${log.status}, ${log.details ? JSON.stringify(log.details) : null}, ${now})
     `;
+  }
+
+  // --- Verifications (magic link / OTP) ---
+  public async createVerification(
+    identifier: string,
+    value: string,
+    ttlMs: number,
+  ): Promise<void> {
+    await this.ensureReady();
+    const now = new Date().toISOString();
+    const expiresAt = new Date(Date.now() + ttlMs).toISOString();
+    const id = `ver_${crypto.randomUUID()}`;
+    if (this.sqliteDb) {
+      this.sqliteDb
+        .query(
+          "INSERT INTO verifications (id, identifier, value, expires_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
+        )
+        .run(id, identifier, value, expiresAt, now, now);
+      return;
+    }
+    const { sql } = await import("bun");
+    await sql`INSERT INTO verifications (id, identifier, value, expires_at, created_at, updated_at) VALUES (${id}, ${identifier}, ${value}, ${expiresAt}, ${now}, ${now})`;
+  }
+
+  /** Single-use: returns true and deletes the row only if value matches and is unexpired. */
+  public async consumeVerification(
+    identifier: string,
+    value: string,
+  ): Promise<boolean> {
+    await this.ensureReady();
+    const now = new Date().toISOString();
+    if (this.sqliteDb) {
+      const row = this.sqliteDb
+        .query(
+          "SELECT id FROM verifications WHERE identifier = ? AND value = ? AND expires_at > ?",
+        )
+        .get(identifier, value, now) as any;
+      if (!row) return false;
+      this.sqliteDb.query("DELETE FROM verifications WHERE id = ?").run(row.id);
+      return true;
+    }
+    const { sql } = await import("bun");
+    const rows = await sql<
+      any[]
+    >`DELETE FROM verifications WHERE identifier = ${identifier} AND value = ${value} AND expires_at > ${now} RETURNING id`;
+    return rows.length > 0;
+  }
+
+  public async markEmailVerified(userId: string): Promise<void> {
+    await this.ensureReady();
+    if (this.sqliteDb) {
+      this.sqliteDb
+        .query(
+          "UPDATE users SET email_verified = 1, updated_at = ? WHERE id = ?",
+        )
+        .run(new Date().toISOString(), userId);
+      return;
+    }
+    const { sql } = await import("bun");
+    await sql`UPDATE users SET email_verified = TRUE, updated_at = ${new Date().toISOString()} WHERE id = ${userId}`;
+  }
+
+  public async getStats(): Promise<{
+    totalUsers: number;
+    activeSessions: number;
+    totalAccounts: number;
+  }> {
+    await this.ensureReady();
+    const now = new Date().toISOString();
+    if (this.sqliteDb) {
+      const u = this.sqliteDb
+        .query("SELECT COUNT(*) AS n FROM users")
+        .get() as any;
+      const s = this.sqliteDb
+        .query("SELECT COUNT(*) AS n FROM sessions WHERE expires_at > ?")
+        .get(now) as any;
+      const a = this.sqliteDb
+        .query("SELECT COUNT(*) AS n FROM accounts")
+        .get() as any;
+      return { totalUsers: u.n, activeSessions: s.n, totalAccounts: a.n };
+    }
+    const { sql } = await import("bun");
+    const u = await sql<any[]>`SELECT COUNT(*)::int AS n FROM users`;
+    const s = await sql<
+      any[]
+    >`SELECT COUNT(*)::int AS n FROM sessions WHERE expires_at > ${now}`;
+    const a = await sql<any[]>`SELECT COUNT(*)::int AS n FROM accounts`;
+    return {
+      totalUsers: u[0].n,
+      activeSessions: s[0].n,
+      totalAccounts: a[0].n,
+    };
+  }
+
+  public async findUserByUsername(
+    username: string,
+  ): Promise<UserRecord | null> {
+    await this.ensureReady();
+    if (this.sqliteDb) {
+      const row = this.sqliteDb
+        .query("SELECT email FROM users WHERE username = ?")
+        .get(username) as any;
+      return row ? this.findUserByEmail(row.email) : null;
+    }
+    const { sql } = await import("bun");
+    const rows = await sql<
+      any[]
+    >`SELECT email FROM users WHERE username = ${username} LIMIT 1`;
+    return rows.length ? this.findUserByEmail(rows[0].email) : null;
   }
 
   // --- CMS & Public Profiles ---
