@@ -255,9 +255,41 @@
         overflow-y: auto;
         white-space: pre-wrap;
       }
+      .skip-link {
+        position: absolute;
+        left: -9999px;
+        top: 8px;
+        z-index: 9999;
+        padding: 8px 14px;
+        background: var(--accent);
+        color: #fff;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+      }
+      .skip-link:focus-visible {
+        left: 16px;
+      }
+      button:focus-visible,
+      input:focus-visible,
+      select:focus-visible,
+      .template-item:focus-visible {
+        outline: 2px solid var(--accent-hover);
+        outline-offset: 2px;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
     </style>
   </head>
   <body>
+    <a href="#main-workspace" class="skip-link">Skip to template preview</a>
     <!-- Sidebar -->
     <aside class="sidebar">
       <div class="header">
@@ -302,7 +334,7 @@
     </aside>
 
     <!-- Main Workspace -->
-    <main class="main">
+    <main id="main-workspace" class="main">
       <div class="toolbar">
         <div class="toolbar-left">
           <span

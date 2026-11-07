@@ -9,7 +9,18 @@
  * Zero emoji, high-performance, responsive layout, dark mode native.
  */
 
-export type ThemeName = "aphrody" | "yolo" | "shenron" | "rosegriffon" | "m3";
+export type ThemeName =
+  | "neutral"
+  | "m3"
+  | "fluent"
+  | "apple"
+  | "omarchy"
+  | "hyprland"
+  | "aphrody"
+  | "chromium"
+  | "yolo"
+  | "shenron"
+  | "rosegriffon";
 
 export interface ThemeColors {
   bg: string;
@@ -24,6 +35,17 @@ export interface ThemeColors {
 }
 
 export const THEMES: Record<ThemeName, ThemeColors> = {
+  neutral: {
+    bg: "#09090b",
+    cardBg: "#18181b",
+    text: "#fafafa",
+    textMuted: "#a1a1aa",
+    primary: "#6366f1",
+    primaryHover: "#4f46e5",
+    accent: "#818cf8",
+    border: "#27272a",
+    badgeBg: "rgba(99, 102, 241, 0.15)",
+  },
   aphrody: {
     bg: "#09090b",
     cardBg: "#121217",
@@ -35,11 +57,66 @@ export const THEMES: Record<ThemeName, ThemeColors> = {
     border: "#27272a",
     badgeBg: "rgba(6, 182, 212, 0.15)",
   },
+  fluent: {
+    bg: "#1f1f1f",
+    cardBg: "#292929",
+    text: "#ffffff",
+    textMuted: "#b3b3b3",
+    primary: "#0078d4",
+    primaryHover: "#106ebe",
+    accent: "#60cdff",
+    border: "#3d3d3d",
+    badgeBg: "rgba(0, 120, 212, 0.15)",
+  },
+  apple: {
+    bg: "#1c1c1e",
+    cardBg: "#2c2c2e",
+    text: "#f5f5f7",
+    textMuted: "#a1a1a6",
+    primary: "#007aff",
+    primaryHover: "#0a84ff",
+    accent: "#5e5ce6",
+    border: "#38383a",
+    badgeBg: "rgba(0, 122, 255, 0.15)",
+  },
+  omarchy: {
+    bg: "#1a1b26",
+    cardBg: "#24283b",
+    text: "#c0caf5",
+    textMuted: "#a9b1d6",
+    primary: "#7aa2f7",
+    primaryHover: "#5d87e6",
+    accent: "#bb9af7",
+    border: "#414868",
+    badgeBg: "rgba(122, 162, 247, 0.15)",
+  },
+  hyprland: {
+    bg: "#11111b",
+    cardBg: "#1e1e2e",
+    text: "#cdd6f4",
+    textMuted: "#a6adc8",
+    primary: "#33ccff",
+    primaryHover: "#00b4ef",
+    accent: "#00ff99",
+    border: "#313244",
+    badgeBg: "rgba(51, 204, 255, 0.15)",
+  },
+  chromium: {
+    bg: "#202124",
+    cardBg: "#292a2d",
+    text: "#e8eaed",
+    textMuted: "#9aa0a6",
+    primary: "#8ab4f8",
+    primaryHover: "#669df6",
+    accent: "#1a73e8",
+    border: "#3c4043",
+    badgeBg: "rgba(138, 180, 248, 0.15)",
+  },
   yolo: {
     bg: "#000000",
     cardBg: "#0c0c0c",
     text: "#00ff66",
-    textMuted: "#009944",
+    textMuted: "#00cc55",
     primary: "#00ff66",
     primaryHover: "#00cc55",
     accent: "#ff0055",
@@ -133,10 +210,15 @@ export class AuthUiRenderer {
     .footer-links { text-align: center; margin-top: 24px; font-size: 13px; color: ${theme.textMuted}; }
     .footer-links a { color: ${theme.primary}; text-decoration: none; font-weight: 600; }
     .error-banner { background-color: rgba(239, 68, 68, 0.15); border: 1px solid #ef4444; color: #fca5a5; padding: 12px; border-radius: 8px; font-size: 13px; margin-bottom: 20px; }
+    .skip-link { position: absolute; left: -9999px; top: 8px; z-index: 9999; padding: 8px 14px; background: ${theme.primary}; color: #09090b; border-radius: 6px; font-size: 13px; font-weight: 700; text-decoration: none; }
+    .skip-link:focus-visible { left: 16px; }
+    a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid ${theme.primary}; outline-offset: 2px; }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
   </style>
 </head>
 <body>
-  <div class="container">
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+  <main id="main-content" class="container">
     <div class="logo-header">
       <div class="logo-badge">${product} ecosystem</div>
       <h1>${title}</h1>
@@ -205,7 +287,7 @@ export class AuthUiRenderer {
           : `Already have an account? <a href="/auth/signin?product=${product}">Sign In</a>`
       }
     </div>
-  </div>
+  </main>
 
 </body>
 </html>`;

@@ -61,7 +61,16 @@ export class IdentityDatabase {
         config.sqlitePath ||
         process.env.SQLITE_DB_PATH ||
         "data/aphrody_identity.db";
-      this.sqliteDb = new SqliteDatabase(path);
+      try {
+        if (path !== ":memory:") {
+          const { mkdirSync } = require("node:fs");
+          const { dirname } = require("node:path");
+          mkdirSync(dirname(path), { recursive: true });
+        }
+        this.sqliteDb = new SqliteDatabase(path);
+      } catch {
+        this.sqliteDb = new SqliteDatabase(":memory:");
+      }
       this.sqliteDb.run("PRAGMA journal_mode = WAL;");
       this.sqliteDb.run("PRAGMA foreign_keys = ON;");
     }

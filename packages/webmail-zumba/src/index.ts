@@ -38,6 +38,41 @@ export class ZumbaWebmailEngine {
     return this.messages.find((m) => m.id === id);
   }
 
+  sendMessage(params: {
+    from?: string;
+    to: string | string[];
+    subject: string;
+    html?: string;
+    text?: string;
+    folder?: MailboxMessage["folder"];
+  }): MailboxMessage {
+    const recipients = Array.isArray(params.to)
+      ? params.to
+      : params.to
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
+    const plain =
+      params.text || (params.html ? params.html.replace(/<[^>]+>/g, " ").trim() : "");
+    const html =
+      params.html || `<p>${plain.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>`;
+    const msg: MailboxMessage = {
+      id: `msg_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      folder: params.folder || "sent",
+      from: params.from || "contact@aphrody.com",
+      to: recipients.length ? recipients : ["contact@aphrody.com"],
+      subject: params.subject || "(No subject)",
+      snippet: plain.slice(0, 120),
+      date: new Date().toISOString(),
+      html,
+      text: plain,
+      unread: false,
+      starred: false,
+    };
+    this.messages.unshift(msg);
+    return msg;
+  }
+
   getHtmlUi(): string {
     const p = resolve(__dirname, "ui", "index.html");
     return readFileSync(p, "utf8");

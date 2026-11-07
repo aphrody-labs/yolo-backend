@@ -265,9 +265,83 @@
         background: #fff;
         border-radius: 8px;
       }
+      .skip-link {
+        position: absolute;
+        left: -9999px;
+        top: 8px;
+        z-index: 9999;
+        padding: 8px 14px;
+        background: var(--accent);
+        color: #fff;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+      }
+      .skip-link:focus-visible {
+        left: 16px;
+      }
+      button:focus-visible,
+      input:focus-visible,
+      textarea:focus-visible,
+      .folder-item:focus-visible,
+      .message-card:focus-visible {
+        outline: 2px solid var(--accent-hover);
+        outline-offset: 2px;
+      }
+      dialog#compose-modal {
+        margin: auto;
+        width: 100%;
+        max-width: 560px;
+        background: var(--panel-bg);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 24px 48px rgba(0, 0, 0, 0.6);
+      }
+      dialog#compose-modal::backdrop {
+        background: rgba(9, 13, 22, 0.72);
+      }
+      .compose-field {
+        margin-bottom: 14px;
+      }
+      .compose-field label {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-muted);
+        margin-bottom: 6px;
+      }
+      .compose-field input,
+      .compose-field textarea {
+        width: 100%;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 10px 12px;
+        color: var(--text);
+        font-size: 13px;
+        font-family: inherit;
+      }
+      .compose-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation-duration: 0.01ms !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
     </style>
   </head>
   <body>
+    <a href="#main-reader" class="skip-link">Skip to message reader</a>
     <!-- Top Navigation -->
     <header class="topbar">
       <div class="brand">
@@ -339,7 +413,7 @@
       </section>
 
       <!-- Message Reader -->
-      <main class="reader-pane">
+      <main id="main-reader" class="reader-pane">
         <div class="reader-toolbar">
           <div>
             <button
@@ -407,15 +481,56 @@
         </div>
 
         <div class="reader-body">
-          <iframe id="readerFrame" class="reader-frame"></iframe>
+          <iframe id="readerFrame" class="reader-frame" title="Message content"></iframe>
         </div>
       </main>
     </div>
+
+    <dialog id="compose-modal" aria-labelledby="compose-modal-title">
+      <h3 id="compose-modal-title" style="font-size: 16px; font-weight: 700; margin-bottom: 16px">
+        New Message (SMTP Relay + Cloudflare Edge)
+      </h3>
+      <form id="compose-form" onsubmit="submitCompose(event)">
+        <div class="compose-field">
+          <label for="compose-to">To</label>
+          <input id="compose-to" name="to" type="email" required placeholder="recipient@aphrody.com" />
+        </div>
+        <div class="compose-field">
+          <label for="compose-subject">Subject</label>
+          <input id="compose-subject" name="subject" type="text" required placeholder="Subject" />
+        </div>
+        <div class="compose-field">
+          <label for="compose-body">Message</label>
+          <textarea id="compose-body" name="body" rows="6" required placeholder="Write your message..."></textarea>
+        </div>
+        <div class="compose-actions">
+          <button
+            type="button"
+            onclick="closeComposeModal()"
+            style="
+              background: transparent;
+              border: 1px solid var(--border);
+              color: var(--text);
+              padding: 8px 16px;
+              border-radius: 8px;
+              cursor: pointer;
+              font-size: 13px;
+            "
+          >
+            Cancel
+          </button>
+          <button type="submit" class="btn-compose" style="margin-bottom: 0">
+            Send Message
+          </button>
+        </div>
+      </form>
+    </dialog>
 
     <script>
       const sampleMails = [
         {
           id: "msg_1",
+          folder: "inbox",
           from: "Aphrody Cloud OS <notifications@aphrody.app>",
           to: "contact@aphrody.com",
           subject: "Welcome to Aphrody WebOS & Edge Cloud",
@@ -426,6 +541,7 @@
         },
         {
           id: "msg_2",
+          folder: "inbox",
           from: "Aphrody System <noreply@aphrody.app>",
           to: "contact@aphrody.com",
           subject: "[DEPLOYMENT] Mesh Gateway v1.1.0 Released",
@@ -436,6 +552,7 @@
         },
         {
           id: "msg_3",
+          folder: "inbox",
           from: "Aphrody Security <security@aphrody.app>",
           to: "contact@aphrody.com",
           subject: "Security Alert: New Sign-in Detected",
@@ -446,6 +563,7 @@
         },
         {
           id: "msg_4",
+          folder: "inbox",
           from: "Aphrody Billing <billing@aphrody.app>",
           to: "contact@aphrody.com",
           subject: "Invoice INV-2026-0891 from Aphrody Labs",
@@ -456,12 +574,17 @@
         },
       ];
 
-      function init() {
+      let activeFolder = "inbox";
+
+      function renderFolder(folder) {
+        activeFolder = folder;
         const list = document.getElementById("messageList");
         list.innerHTML = "";
-        sampleMails.forEach((m, i) => {
+        const items = sampleMails.filter((m) => (m.folder || "inbox") === folder);
+        items.forEach((m, i) => {
           const card = document.createElement("div");
           card.className = "message-card" + (i === 0 ? " active" : "");
+          card.tabIndex = 0;
           card.onclick = () => selectMail(m, card);
           card.innerHTML = `
           <div class="message-from">
@@ -473,7 +596,22 @@
         `;
           list.appendChild(card);
         });
-        selectMail(sampleMails[0]);
+        if (items[0]) {
+          selectMail(items[0]);
+        }
+      }
+
+      function init() {
+        renderFolder("inbox");
+      }
+
+      function selectFolder(folder) {
+        document.getElementById("folderTitle").innerText =
+          folder.charAt(0).toUpperCase() + folder.slice(1);
+        document
+          .querySelectorAll(".folder-item")
+          .forEach((el) => el.classList.remove("active"));
+        renderFolder(folder);
       }
 
       function selectMail(m, element) {
@@ -485,16 +623,57 @@
         }
         document.getElementById("readerSubject").innerText = m.subject;
         document.getElementById("readerFrom").innerText = m.from;
-        document.getElementById("readerTo").innerText = m.to;
+        document.getElementById("readerTo").innerText = Array.isArray(m.to)
+          ? m.to.join(", ")
+          : m.to;
         document.getElementById("readerDate").innerText = m.date;
         document.getElementById("readerMessageId").innerText = `ID: ${m.id}`;
         document.getElementById("readerFrame").srcdoc = m.html;
       }
 
       function composeEmail() {
-        alert(
-          "Opening Compose modal (SMTP Relay to Hostinger KVM 8 & Cloudflare Edge ready)",
-        );
+        const dialog = document.getElementById("compose-modal");
+        if (dialog && typeof dialog.showModal === "function") {
+          dialog.showModal();
+          document.getElementById("compose-to")?.focus();
+        }
+      }
+
+      function closeComposeModal() {
+        const dialog = document.getElementById("compose-modal");
+        if (dialog && typeof dialog.close === "function") {
+          dialog.close();
+        }
+      }
+
+      async function submitCompose(ev) {
+        ev.preventDefault();
+        const to = document.getElementById("compose-to").value.trim();
+        const subject = document.getElementById("compose-subject").value.trim();
+        const text = document.getElementById("compose-body").value.trim();
+        const created = {
+          id: "msg_" + Date.now(),
+          folder: "sent",
+          from: "contact@aphrody.com",
+          to,
+          subject,
+          snippet: text.slice(0, 100),
+          date: "Just now",
+          html: "<p>" + text.replace(/</g, "&lt;") + "</p>",
+        };
+        sampleMails.unshift(created);
+        try {
+          await fetch("/api/messages/send", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ to, subject, text }),
+          });
+        } catch {
+          // Offline / standalone fallback
+        }
+        document.getElementById("compose-form").reset();
+        closeComposeModal();
+        selectFolder("sent");
       }
 
       window.addEventListener("DOMContentLoaded", init);

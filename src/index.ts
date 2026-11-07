@@ -93,13 +93,33 @@ export function createUnifiedBackendApp(opts: { db?: IdentityDatabase } = {}) {
     return c.json(details);
   });
 
-  // Zumba Webmail API
+  // Zumba Webmail UI & API
+  app.get("/webmail", (c) => {
+    return c.html(zumba.getHtmlUi());
+  });
+
   app.get("/api/webmail/messages", (c) => {
     const folder = c.req.query("folder") || "inbox";
     return c.json({
       folder,
       messages: zumba.getFolderMessages(folder as any),
     });
+  });
+
+  app.post("/api/webmail/messages", async (c) => {
+    try {
+      const body = await c.req.json();
+      const message = zumba.sendMessage({
+        from: body.from,
+        to: body.to || "contact@aphrody.com",
+        subject: body.subject || "(No subject)",
+        html: body.html,
+        text: body.text || body.body,
+      });
+      return c.json({ success: true, message }, 201);
+    } catch (err: any) {
+      return c.json({ error: err.message }, 400);
+    }
   });
 
   // Auth UI - Sign In / Sign Up
