@@ -1,0 +1,65 @@
+[package]
+name = "aphrody-infra"
+version = "1.4.7"
+edition = "2024"
+rust-version = "1.97"
+license = "Apache-2.0"
+repository = "https://github.com/aphrody-labs/aphrody"
+description = "Bun OS infrastructure, workflow, development environment and deployment orchestrator"
+
+[lib]
+name = "aphrody_infra"
+path = "src/lib.rs"
+
+[[bin]]
+name = "bunos-infra"
+path = "src/main.rs"
+
+[dependencies]
+aphrody-proc = { path = "../aphrody-proc", version = "1.4.7", features = [] }
+anyhow = "1.0.104"
+aphrody-git = { package = "bun_git", path = "../bun-os-git", version = "1.4.7" }
+aphrody-ssh = { path = "../aphrody-ssh", version = "1.4.7", features = [] }
+aphrody-ovh = { path = "../aphrody-ovh", version = "1.4.7" }
+aphrody-vpn = { path = "../aphrody-vpn", version = "1.4.7", features = [] }
+aphrody-remote-desktop = { path = "../aphrody-remote-desktop", version = "1.4.7", features = ["vnc"] }
+aphrody-wireguard = { path = "../aphrody-wireguard", version = "1.4.7", features = [] }
+aphrody-yolo = { path = "../aphrody-yolo", version = "1.4.7" }
+base64 = "0.23.1"
+chrono = { version = "0.4", features = ["serde"] }
+clap = { version = "4.6.6", features = ["derive", "env", "color"] }
+gix = { version = "0.88", default-features = false, features = ["sha1", "basic", "extras", "comfort", "max-performance-safe", "revision", "index", "worktree-mutation"] }
+reqwest = { version = "0.13.5", features = ["rustls-no-provider", "json", "stream", "form", "query", "charset", "http2", "system-proxy", "blocking", "cookies", "gzip", "brotli", "deflate", "socks", "multipart"], default-features = false }
+ignore = { version = "0.4", features = [] }
+opendal = { version = "0.59", default-features = false, features = ["executors-tokio", "services-fs"] }
+rcgen = { version = "0.14", default-features = false, features = ["crypto", "pem", "ring"] }
+regex = { version = "1.11", features = [] }
+ring = "0.17"
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
+serde = { version = "1.0.228", features = ["derive", "std"], default-features = false }
+serde_json = "1.0.151"
+tar = "0.4.46"
+tokio = { version = "1.53.1", features = ["process", "rt-multi-thread", "macros", "time", "signal", "sync", "fs", "io-util", "full"] }
+toml = "1.1.5"
+
+[dev-dependencies]
+tempfile = "3.27.0"
+
+[lints.rust]
+unsafe_op_in_unsafe_fn = "deny"
+unused_must_use = "deny"
+non_ascii_idents = "deny"
+
+[lints.clippy]
+todo = "deny"
+unimplemented = "deny"
+dbg_macro = "deny"
+correctness = { level = "warn", priority = -1 }
+perf = { level = "warn", priority = -1 }
+
+[target.'cfg(unix)'.dependencies]
+rustix = { version = "1.0", default-features = false, features = ["std","fs","event","process","net"] }
+
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.62.2", features = ["Foundation","Globalization","Graphics_Imaging","Media_Ocr","Media_SpeechSynthesis","Media_Core","Storage_Streams","Win32_Foundation","Win32_Media_Audio","Win32_Security","Win32_Graphics_Dwm","Win32_Graphics_Gdi","Win32_Storage_IndexServer","Win32_System_Com","Win32_System_Ole","Win32_System_Search","Win32_System_Threading","Win32_System_IO","Win32_System_Diagnostics_Debug","Win32_System_Memory","Win32_System_SystemInformation","Win32_System_Diagnostics_ToolHelp","Win32_System_Variant","Win32_UI_WindowsAndMessaging","Win32","Win32_System","Win32_System_Console","Win32_System_TaskScheduler"] }
+windows-sys = { version = "0.61", features = ["Win32_System_SystemInformation","Win32_Foundation","Win32_System_Console","Win32_System_Services"] }
