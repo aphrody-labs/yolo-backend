@@ -15,7 +15,8 @@
 import { Database } from "bun:sqlite";
 let sqliteVec: any = null;
 try {
-  sqliteVec = await import("sqlite-vec");
+  const vecPkg = "sqlite-vec";
+  sqliteVec = await import(vecPkg);
 } catch {
   sqliteVec = { load: () => {} };
 }

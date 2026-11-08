@@ -26,6 +26,6 @@
     "resolveJsonModule": true,
     "isolatedModules": true
   },
-  "include": ["packages/*/src/**/*", "scripts/**/*", "test/**/*"],
+  "include": ["src/**/*", "packages/*/src/**/*", "scripts/**/*", "test/**/*"],
   "exclude": ["node_modules", "dist", "target"]
 }

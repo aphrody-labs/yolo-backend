@@ -20,7 +20,7 @@ export class GoogleWorkspaceClient {
     this.clientEmail =
       config?.clientEmail ||
       process.env.FIREBASE_CLIENT_EMAIL ||
-      "admin-sa@rgfr-8927d.iam.gserviceaccount.com";
+      "yolo-automation@aphrody.iam.gserviceaccount.com";
     this.privateKey =
       config?.privateKey ||
       process.env.GOOGLE_PRIVATE_KEY ||

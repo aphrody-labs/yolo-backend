@@ -11,6 +11,7 @@ export * from "../packages/webmail-zumba/src/index.js";
 export * from "../packages/better-auth-full/src/index.js";
 export * from "../packages/google-workspace/src/index.js";
 export * from "../packages/mail-templates/src/index.js";
+export * from "./vital-cloud-edge.js";
 
 import { Hono } from "hono";
 import { ResendEngine } from "../packages/resend-engine/src/index.js";
@@ -25,6 +26,7 @@ import { PasswordVaultEngine } from "../packages/better-auth-full/src/vault/inde
 import { ProviderRegistry } from "../packages/better-auth-full/src/providers/index.js";
 import { GoogleWorkspaceClient } from "../packages/google-workspace/src/index.js";
 import { MailDispatcher } from "../packages/mail-templates/src/dispatcher.js";
+import { generateVitalCloudEdgeAuditReport } from "./vital-cloud-edge.js";
 
 function escapeHtml(raw: string): string {
   return String(raw)
@@ -62,6 +64,7 @@ export function createUnifiedBackendApp(opts: { db?: IdentityDatabase } = {}) {
         better_auth_suite: "ready",
         google_workspace: "ready",
         mail_templates: "ready",
+        vital_cloud_edge_boundary: "ready",
       },
       time: new Date().toISOString(),
     });
@@ -100,6 +103,13 @@ export function createUnifiedBackendApp(opts: { db?: IdentityDatabase } = {}) {
   app.get("/api/vps/hostinger", async (c) => {
     const details = await hostinger.getKvmVpsDetails();
     return c.json(details);
+  });
+
+  // Vital Cloud Edge & WireGuard VPN Boundary Audit API
+  app.get("/api/cloud/vital-edge", async (c) => {
+    const live = c.req.query("live") === "true";
+    const report = await generateVitalCloudEdgeAuditReport({ live });
+    return c.json(report);
   });
 
   // Zumba Webmail UI & API

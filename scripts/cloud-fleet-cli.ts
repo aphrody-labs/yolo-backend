@@ -5,7 +5,7 @@
  */
 
 import { AphrodyOvh } from '../packages/ovh/src/index.js';
-import { HostingerMailClient } from '../packages/hostinger-mail/src/index.ts';
+import { HostingerMailClient } from '../packages/hostinger-mail/src/index.js';
 
 const args = process.argv.slice(2);
 const command = args[0] || 'status';
